@@ -3,11 +3,13 @@ import Bookmarks from '@arcgis/core/widgets/Bookmarks';
 import Expand from '@arcgis/core/widgets/Expand';
 import MapView from "@arcgis/core/views/MapView";
 import WebMap from "@arcgis/core/WebMap";
+import configData from "../config/config-interface"
 
 import "./App.scss"; 
 
-function App() {
 
+function App() {
+  console.log("configData",configData)
   const mapDiv = useRef(null);
 
   useEffect(() => {
