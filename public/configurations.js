@@ -1,8 +1,8 @@
 //the following object must be var and not let/const.
 var EXTERNAL_CONFIG = {
 	webmapConfig: {
-		"id": "aa1d3f80270146208328cf66d022e09c",
-		"portal": null,
+		"id": "6dcd087d08984049bdb4f30a9a4266d6",
+		"portal": "https://demo.gbs.kiwi/portal/",
 	},
 	//
 	mapConfig: {

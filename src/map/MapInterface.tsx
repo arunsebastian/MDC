@@ -3,21 +3,33 @@ import Bookmarks from '@arcgis/core/widgets/Bookmarks';
 import Expand from '@arcgis/core/widgets/Expand';
 import MapView from "@arcgis/core/views/MapView";
 import WebMap from "@arcgis/core/WebMap";
-import configData from "../config/config-interface"
-import "./Map.scss";
+import Map from "@arcgis/core/Map";
+import esriConfig from "@arcgis/core/config"
+import appConfig from "../config/config-interface"
+import "./MapInterface.scss";
 
 
-function Map() {
+function MapInterface() {
 	const mapDiv = useRef(null);
 
 	const isWebmapConfigured = () => {
 		//check if webmap
-		return configData.hasOwnProperty("webmapConfig") && String(configData["webmapConfig"].id || "").length > 0;
+		return (appConfig["webmapConfig"]?.id || "").length > 0
 	}
 
 	const isNormalMapConfigured = () => {
 		//check if basemaps
-		return configData.hasOwnProperty("mapConfig") && configData["mapConfig"].basemaps instanceof Array && configData["mapConfig"].basemaps.length > 0;
+		return  appConfig["mapConfig"]?.basemaps instanceof Array && 
+				appConfig["mapConfig"]?.basemaps.length > 0
+	}
+
+	const getConfiguredPortal = () => {
+		return appConfig["webmapConfig"]?.portal || "https://www.arcgis.com"
+	}
+
+	const setEsriConfig = () =>{
+		esriConfig.portalUrl = getConfiguredPortal();
+		esriConfig.request.timeout = 8000;
 	}
 
 	useEffect(() => {
@@ -25,29 +37,41 @@ function Map() {
 			/**
 			 * Initialize maps
 			 */
-			const webmap = new WebMap({
-				portalItem: {
-					id: "aa1d3f80270146208328cf66d022e09c"
-				}
-			});
+			let map = new Map();
+			setEsriConfig();
+			if(isWebmapConfigured()){
+				map = new WebMap({
+					portalItem: {
+						id: appConfig.webmapConfig.id					}
+				});
+			}else if(isNormalMapConfigured()){
+				//add create base map
+				// add operational layers
+			}else{
+				// add error string;
+				throw new Error("Invalid map configuration.Please review the config.")
+			}
+
+
+			
 
 			// I AM HERE:::
 			//test THE CONFIGS FOR WEBMAP/NORMAL Map AND WHICH TAKES PRECEDENCE
 			//ADD A NEW FOLDER Strings
 
 
-			if (isWebmapConfigured()) {
+			// if (isWebmapConfigured()) {
 
-			} else if (isNormalMapConfigured()) {
+			// } else if (isNormalMapConfigured()) {
 
-			} else {
-				throw ("Not configured")
-			}
+			// } else {
+			// 	throw ("Not configured")
+			// }
 
 
 			const view = new MapView({
 				container: mapDiv.current,
-				map: webmap
+				map: map
 			});
 
 			const bookmarks = new Bookmarks({
@@ -74,9 +98,9 @@ function Map() {
 			// 	}
 			// });
 		}
-	}, []);
+	}, [setEsriConfig]);
 
 	return <div className="mapDiv" ref={mapDiv}></div>;
 }
 
-export default Map;
+export default MapInterface;

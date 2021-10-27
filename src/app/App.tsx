@@ -1,7 +1,7 @@
 import React from "react";
-import Map from "../map/Map"
+import MapInterface from "../map/MapInterface";
 
 function App() {
-	return <Map />;
+	return <MapInterface />;
 }
 export default App;
