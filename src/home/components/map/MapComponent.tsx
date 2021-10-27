@@ -1,16 +1,20 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
+import { useLocation } from 'react-router-dom';
 import Bookmarks from '@arcgis/core/widgets/Bookmarks';
 import Expand from '@arcgis/core/widgets/Expand';
 import MapView from "@arcgis/core/views/MapView";
 import WebMap from "@arcgis/core/WebMap";
 import Map from "@arcgis/core/Map";
 import esriConfig from "@arcgis/core/config"
-import appConfig from "../config/config-interface"
-import "./MapInterface.scss";
+import appConfig from "../../../config/config-interface"
+import "./MapComponent.scss";
 
+const arcgisOnline:string = "https://www.arcgis.com";
 
-function MapInterface() {
+function MapComponent() {
 	const mapDiv = useRef(null);
+	const params = useLocation();
+	console.log("params >>>> ",params)
 
 	const isWebmapConfigured = () => {
 		//check if webmap
@@ -23,14 +27,14 @@ function MapInterface() {
 				appConfig["mapConfig"]?.basemaps.length > 0
 	}
 
-	const getConfiguredPortal = () => {
-		return appConfig["webmapConfig"]?.portal || "https://www.arcgis.com"
-	}
+	const getConfiguredPortal = useCallback(() => {
+		return appConfig["webmapConfig"]?.portal || arcgisOnline;
+	},[])
 
-	const setEsriConfig = () =>{
+	const setEsriConfig = useCallback(() =>{
 		esriConfig.portalUrl = getConfiguredPortal();
 		esriConfig.request.timeout = 8000;
-	}
+	},[getConfiguredPortal])
 
 	useEffect(() => {
 		if (mapDiv.current) {
@@ -43,7 +47,8 @@ function MapInterface() {
 				map = new WebMap({
 					portalItem: {
 						id: appConfig.webmapConfig.id					}
-				});
+					}
+				);
 			}else if(isNormalMapConfigured()){
 				//add create base map
 				// add operational layers
@@ -103,4 +108,4 @@ function MapInterface() {
 	return <div className="mapDiv" ref={mapDiv}></div>;
 }
 
-export default MapInterface;
+export default MapComponent;

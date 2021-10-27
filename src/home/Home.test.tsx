@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import MapInterface from './MapInterface';
+import Home from './Home';
 
 test('renders learn react link', () => {
-  render(<MapInterface />);
+  render(<Home />);
   const linkElement = screen.getByText(/learn react/i);
   expect(linkElement).toBeInTheDocument();
 });

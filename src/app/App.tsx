@@ -1,7 +1,12 @@
 import React from "react";
-import MapInterface from "../map/MapInterface";
+import Home from "../home/Home";
+import { Switch, Route,BrowserRouter } from 'react-router-dom';
 
 function App() {
-	return <MapInterface />;
+	return <BrowserRouter>
+		<Switch>
+			<Route exact path="/"  component={Home} />
+		</Switch>
+	</BrowserRouter>
 }
 export default App;
