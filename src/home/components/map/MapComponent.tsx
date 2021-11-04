@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useCallback } from "react";
-import { useLocation } from 'react-router-dom';
-import Bookmarks from '@arcgis/core/widgets/Bookmarks';
+// import { useLocation } from 'react-router-dom';
 import CoordinateSearch from "../../../widgets/CoordinateSearch/CoordinateSearch";
-import Expand from '@arcgis/core/widgets/Expand';
+import WebEditor from "../../../widgets/WebEditor/WebEditor";
 import MapView from "@arcgis/core/views/MapView";
 import WebMap from "@arcgis/core/WebMap";
 import Map from "@arcgis/core/Map";
@@ -64,7 +63,7 @@ function MapComponent() {
 				map: map
 			});
 
-			let coordinateSearch = new CoordinateSearch({
+			const coordinateSearch = new CoordinateSearch({
 				view: view,
 				visibleElements:{
 					settingsButton:false,
@@ -72,6 +71,11 @@ function MapComponent() {
 				}
 			});
 			view.ui.add(coordinateSearch, "bottom-left");
+
+			const editor = new WebEditor({
+				view: view
+			});
+			view.ui.add(editor, "top-right");
 		}
 	}, [setEsriConfig]);
 
