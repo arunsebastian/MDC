@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import { useLocation } from 'react-router-dom';
 import Bookmarks from '@arcgis/core/widgets/Bookmarks';
+import CoordinateSearch from "../../../widgets/CoordinateSearch/CoordinateSearch";
 import Expand from '@arcgis/core/widgets/Expand';
 import MapView from "@arcgis/core/views/MapView";
 import WebMap from "@arcgis/core/WebMap";
@@ -13,8 +14,9 @@ const arcgisOnline:string = "https://www.arcgis.com";
 
 function MapComponent() {
 	const mapDiv = useRef(null);
-	const params = useLocation();
-	console.log("params >>>> ",params)
+	//url params
+	//const params = useLocation();
+	//console.log("params >>>> ",params)
 
 	const isWebmapConfigured = () => {
 		//check if webmap
@@ -53,46 +55,21 @@ function MapComponent() {
 				//add create base map
 				// add operational layers
 			}else{
-				// add error string;
+				// add  error strings folder and import as module;
 				throw new Error("Invalid map configuration.Please review the config.")
 			}
-
-
-			
-
-			// I AM HERE:::
-			//test THE CONFIGS FOR WEBMAP/NORMAL Map AND WHICH TAKES PRECEDENCE
-			//ADD A NEW FOLDER Strings
-
-
-			// if (isWebmapConfigured()) {
-
-			// } else if (isNormalMapConfigured()) {
-
-			// } else {
-			// 	throw ("Not configured")
-			// }
-
 
 			const view = new MapView({
 				container: mapDiv.current,
 				map: map
 			});
 
-			const bookmarks = new Bookmarks({
-				view,
-				// allows bookmarks to be added, edited, or deleted
-				editingEnabled: true
+			let coordinateSearch = new CoordinateSearch({
+				view: view
 			});
-
-			const bkExpand = new Expand({
-				view,
-				content: bookmarks,
-				expanded: true
-			});
-
-			// Add the widget to the top-right corner of the view
-			view.ui.add(bkExpand, "top-right");
+			  
+			  // Adds widget in the bottom left corner of the view
+			  view.ui.add(coordinateSearch, "bottom-left");
 
 			// bonus - how many bookmarks in the webmap?
 			// webmap.when(() => {
