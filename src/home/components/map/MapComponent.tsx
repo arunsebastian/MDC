@@ -65,20 +65,13 @@ function MapComponent() {
 			});
 
 			let coordinateSearch = new CoordinateSearch({
-				view: view
+				view: view,
+				visibleElements:{
+					settingsButton:false,
+    				captureButton:true
+				}
 			});
-			  
-			  // Adds widget in the bottom left corner of the view
-			  view.ui.add(coordinateSearch, "bottom-left");
-
-			// bonus - how many bookmarks in the webmap?
-			// webmap.when(() => {
-			// 	if (webmap.bookmarks && webmap.bookmarks.length) {
-			// 		console.log("Bookmarks: ", webmap.bookmarks.length);
-			// 	} else {
-			// 		console.log("No bookmarks in this webmap.");
-			// 	}
-			// });
+			view.ui.add(coordinateSearch, "bottom-left");
 		}
 	}, [setEsriConfig]);
 
