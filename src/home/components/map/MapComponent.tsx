@@ -5,8 +5,8 @@ import WebEditor from "../../../widgets/WebEditor/WebEditor";
 import MapView from "@arcgis/core/views/MapView";
 import WebMap from "@arcgis/core/WebMap";
 import Map from "@arcgis/core/Map";
-import esriConfig from "@arcgis/core/config"
-import appConfig from "../../../config/config-interface"
+import esriConfig from "@arcgis/core/config";
+import appConfig from "../../../config/config-interface";
 import "./MapComponent.scss";
 
 const arcgisOnline:string = "https://www.arcgis.com";
@@ -54,7 +54,7 @@ function MapComponent() {
 				//add create base map
 				// add operational layers
 			}else{
-				// add  error strings folder and import as module;
+				// add  error strings folder and use i18n;
 				throw new Error("Invalid map configuration.Please review the config.")
 			}
 

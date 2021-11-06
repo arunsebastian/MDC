@@ -13,7 +13,10 @@ export default class WebEditor extends Editor{
     }
     setViewModel = () =>{
         const vm = new WebEditorViewModel({
-            view:this.view
+            view:this.view,
+            snappingOptions:{
+                enabled:true
+            }
         });
         this.set("viewModel",vm);
     }
