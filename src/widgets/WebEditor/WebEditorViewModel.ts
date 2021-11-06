@@ -16,7 +16,6 @@ export default class WebEditorViewModel extends EditorViewModel{
 			});
 			this._waitForLayerLoad().then(()=>{
 				const layerInfos = featureLayers.map((fLayer:any)=>{
-					console.log(fLayer.editingEnabled)
 					return {layer:fLayer,fieldConfig:this._getFieldConfig(fLayer as __esri.FeatureLayer)}
 				}).toArray();
 				this.set("layerInfos",layerInfos);
