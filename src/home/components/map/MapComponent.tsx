@@ -1,7 +1,7 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, {useState, useRef, useEffect, useCallback } from "react";
 // import { useLocation } from 'react-router-dom';
 import CoordinateSearch from "../../../widgets/CoordinateSearch/CoordinateSearch";
-import WebEditor from "../../../widgets/WebEditor/WebEditor";
+import EsriEditor from "../../../widgets/EsriEditor/EsriEditor";
 import MapView from "@arcgis/core/views/MapView";
 import WebMap from "@arcgis/core/WebMap";
 import Map from "@arcgis/core/Map";
@@ -13,6 +13,7 @@ const arcgisOnline:string = "https://www.arcgis.com";
 
 function MapComponent() {
 	const mapDiv = useRef(null);
+	const [view, setView] = useState<__esri.MapView>();
 	//url params
 	//const params = useLocation();
 	//console.log("params >>>> ",params)
@@ -37,6 +38,29 @@ function MapComponent() {
 		esriConfig.request.timeout = 8000;
 	},[getConfiguredPortal])
 
+	const renderCoordinateWidget = ()=>{
+		if(view){
+			const coordinateSearch = new CoordinateSearch({
+				view: view,
+				visibleElements:{
+					settingsButton:false,
+					captureButton:true
+				}
+			});
+			view.ui.add(coordinateSearch, "bottom-left");
+		}
+		
+	} 
+
+	const renderEsriEditorWidget =() =>{
+		if(view){
+			const editor = new EsriEditor({
+				view: view
+			});
+			view.ui.add(editor, "top-right");
+		}
+	}
+
 	useEffect(() => {
 		if (mapDiv.current) {
 			/**
@@ -58,27 +82,14 @@ function MapComponent() {
 				throw new Error("Invalid map configuration.Please review the config.")
 			}
 
-			const view = new MapView({
+			setView(new MapView({
 				container: mapDiv.current,
 				map: map
-			});
-
-			const coordinateSearch = new CoordinateSearch({
-				view: view,
-				visibleElements:{
-					settingsButton:false,
-    				captureButton:true
-				}
-			});
-			view.ui.add(coordinateSearch, "bottom-left");
-
-			const editor = new WebEditor({
-				view: view
-			});
-			view.ui.add(editor, "top-right");
+			}));
+			renderCoordinateWidget();
+			renderEsriEditorWidget();
 		}
-	}, [setEsriConfig]);
-
+	}, [view,setEsriConfig]);
 	return <div className="mapDiv" ref={mapDiv}></div>;
 }
 

@@ -1,23 +1,13 @@
-import { subclass } from "@arcgis/core/core/accessorSupport/decorators";
-import Editor from "@arcgis/core/widgets/Editor";
-import WebEditorViewModel from "./WebEditorViewModel";
+import React, { useRef, useEffect, useCallback } from "react";
+import "./MapComponent.scss";
 
-interface WebEditorProperties extends __esri.EditorProperties {}
 
-@subclass("WebEditor")
-export default class WebEditor extends Editor{
-    constructor(params:WebEditorProperties){
-        super(params);
-        this.set(params);
-        this.setViewModel();
-    }
-    setViewModel = () =>{
-        const vm = new WebEditorViewModel({
-            view:this.view,
-            snappingOptions:{
-                enabled:true
-            }
-        });
-        this.set("viewModel",vm);
-    }
+function WebEditor() {
+
+	useEffect(() => {
+		
+	}, []);
+
+	return <div className="mapDiv"></div>;
 }
+export default WebEditor;

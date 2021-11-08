@@ -3,11 +3,11 @@ import EditorViewModel from "@arcgis/core/widgets/Editor/EditorViewModel"
 import {whenTrueOnce} from "@arcgis/core/core/watchUtils";
 
 
-interface WebEditorViewModelProperties extends  __esri.EditorViewModelProperties{}
+interface EsriEditorViewModelProperties extends  __esri.EditorViewModelProperties{}
 
-@subclass("WebEditorViewModel")
-export default class WebEditorViewModel extends EditorViewModel{
-	constructor(params:WebEditorViewModelProperties) {
+@subclass("EsriEditorViewModel")
+export default class EsriEditorViewModel extends EditorViewModel{
+	constructor(params:EsriEditorViewModelProperties) {
 		super(params);
 		this.set(params);
 		whenTrueOnce(this.view, "ready").then(() => {
