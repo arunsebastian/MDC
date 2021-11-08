@@ -31,14 +31,14 @@ function MapComponent() {
 
 	const getConfiguredPortal = useCallback(() => {
 		return appConfig["webmapConfig"]?.portal || arcgisOnline;
-	},[])
+	},[]);
 
 	const setEsriConfig = useCallback(() =>{
 		esriConfig.portalUrl = getConfiguredPortal();
 		esriConfig.request.timeout = 8000;
-	},[getConfiguredPortal])
+	},[getConfiguredPortal]);
 
-	const renderCoordinateWidget = ()=>{
+	const renderCoordinateWidget = useCallback(() =>{
 		if(view){
 			const coordinateSearch = new CoordinateSearch({
 				view: view,
@@ -49,23 +49,20 @@ function MapComponent() {
 			});
 			view.ui.add(coordinateSearch, "bottom-left");
 		}
-		
-	} 
+	},[view]);
 
-	const renderEsriEditorWidget =() =>{
+	const renderEsriEditorWidget = useCallback(() =>{
 		if(view){
 			const editor = new EsriEditor({
 				view: view
 			});
-			view.ui.add(editor, "top-right");
+			view.ui.add(editor, "top-right")
 		}
-	}
+	},[view]);
 
+	//component did update
 	useEffect(() => {
 		if (mapDiv.current) {
-			/**
-			 * Initialize maps
-			 */
 			let map = new Map();
 			setEsriConfig();
 			if(isWebmapConfigured()){
@@ -81,15 +78,22 @@ function MapComponent() {
 				// add  error strings folder and use i18n;
 				throw new Error("Invalid map configuration.Please review the config.")
 			}
-
-			setView(new MapView({
-				container: mapDiv.current,
-				map: map
-			}));
-			renderCoordinateWidget();
-			renderEsriEditorWidget();
+			setView((_view: __esri.MapView| undefined) => {
+				const mapView = new MapView({
+					container: mapDiv.current as any,
+					map: map
+				})
+				return !_view ? mapView : _view;
+			});
 		}
-	}, [view,setEsriConfig]);
+	}, [setEsriConfig]);
+
+	//callback for setView
+	useEffect(()=>{
+		renderCoordinateWidget();
+		renderEsriEditorWidget();
+	},[view,renderCoordinateWidget,renderEsriEditorWidget]);
+
 	return <div className="mapDiv" ref={mapDiv}></div>;
 }
 
