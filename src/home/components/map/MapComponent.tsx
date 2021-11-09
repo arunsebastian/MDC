@@ -1,7 +1,9 @@
-import React, {useState, useRef, useEffect, useCallback } from "react";
+import React,{useState, useRef, useEffect, useCallback } from "react";
+import ReactDOM from "react-dom";
 // import { useLocation } from 'react-router-dom';
 import CoordinateSearch from "../../../widgets/CoordinateSearch/CoordinateSearch";
 import EsriEditor from "../../../widgets/EsriEditor/EsriEditor";
+import WebEditor from "../../../widgets/WebEditor/Editor";
 import MapView from "@arcgis/core/views/MapView";
 import WebMap from "@arcgis/core/WebMap";
 import Map from "@arcgis/core/Map";
@@ -52,11 +54,21 @@ function MapComponent() {
 	},[view]);
 
 	const renderEsriEditorWidget = useCallback(() =>{
+		return;
+		// if(view){
+		// 	const editor = new EsriEditor({
+		// 		view: view
+		// 	});
+		// 	view.ui.add(editor, "bottom-right");
+		// }
+	},[view]);
+
+	const renderWebEditor = useCallback(()=>{
 		if(view){
-			const editor = new EsriEditor({
-				view: view
-			});
-			view.ui.add(editor, "top-right")
+			const node = document.createElement("div");
+			node.setAttribute("class","esri-widget");
+			view.ui.add(node,"top-right");
+			ReactDOM.render(<WebEditor startupAsDraw={false}/>,node)
 		}
 	},[view]);
 
@@ -92,7 +104,8 @@ function MapComponent() {
 	useEffect(()=>{
 		renderCoordinateWidget();
 		renderEsriEditorWidget();
-	},[view,renderCoordinateWidget,renderEsriEditorWidget]);
+		renderWebEditor();
+	},[view,renderCoordinateWidget,renderEsriEditorWidget,renderWebEditor]);
 
 	return <div className="mapDiv" ref={mapDiv}></div>;
 }
