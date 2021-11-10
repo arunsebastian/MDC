@@ -54,13 +54,12 @@ function MapComponent() {
 	},[view]);
 
 	const renderEsriEditorWidget = useCallback(() =>{
-		return;
-		// if(view){
-		// 	const editor = new EsriEditor({
-		// 		view: view
-		// 	});
-		// 	view.ui.add(editor, "bottom-right");
-		// }
+		if(view){
+			const editor = new EsriEditor({
+				view: view
+			});
+			view.ui.add(editor, "bottom-right");
+		}
 	},[view]);
 
 	const renderWebEditor = useCallback(()=>{
@@ -103,7 +102,7 @@ function MapComponent() {
 	//callback for setView
 	useEffect(()=>{
 		renderCoordinateWidget();
-		renderEsriEditorWidget();
+		//renderEsriEditorWidget();
 		renderWebEditor();
 	},[view,renderCoordinateWidget,renderEsriEditorWidget,renderWebEditor]);
 

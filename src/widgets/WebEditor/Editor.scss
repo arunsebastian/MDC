@@ -1,3 +1,15 @@
 .web-editor{
     padding:5px;
+    width:360px;
+    .web-editor-title-l1{
+        width:50%;
+    }
+    .web-editor-tab{
+        overflow:auto;
+        width:100%;
+        padding: 0px !important;
+    }
+}
+.w-100{
+    width:100%;
 }

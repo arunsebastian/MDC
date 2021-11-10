@@ -1,0 +1,15 @@
+.web-editor-draw{
+    width:100%;
+    display: flex;
+    flex-flow: column;
+    .web-editor-draw-template{
+        flex:1;
+        min-height:50px;
+        max-height:300px;
+    }
+    .web-editor-draw-actionpad{
+        height:30px;
+        margin-top:5px;
+        border:1px solid red;
+    }
+}
