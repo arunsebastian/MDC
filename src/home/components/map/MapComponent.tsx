@@ -68,7 +68,7 @@ function MapComponent() {
 			const node = document.createElement("div");
 			node.setAttribute("class","esri-widget");
 			view.ui.add(node,"top-right");
-			ReactDOM.render(<WebEditor startupAsDraw={false}/>,node)
+			ReactDOM.render(<WebEditor view={view} startupAsDraw={false}/>,node)
 		}
 	},[view]);
 

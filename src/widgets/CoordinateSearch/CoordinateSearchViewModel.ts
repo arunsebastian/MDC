@@ -1,6 +1,4 @@
 import { subclass } from "@arcgis/core/core/accessorSupport/decorators";
-import Collection from "@arcgis/core/core/Collection";
-
 import CoordinateConversionViewModel from "@arcgis/core/widgets/CoordinateConversion/CoordinateConversionViewModel"
 import Format from "@arcgis/core/widgets/CoordinateConversion/support/Format";
 import Conversion from "@arcgis/core/widgets/CoordinateConversion/support/Conversion";
