@@ -1,4 +1,4 @@
-import react,{useEffect,useLayoutEffect,useCallback,useRef,useState } from "react";
+import {useEffect,useLayoutEffect,useCallback,useState } from "react";
 import { 
 	CalciteBlock,
 	CalciteTabs, CalciteTab, 
@@ -74,7 +74,7 @@ const Editor = (props:EditorProps) => {
 		
 
 		return  (
-			<CalciteBlock open={true} className="web-editor" collapsible={false} heading="Editor">
+			<CalciteBlock open={true} className="web-editor" collapsible={true} heading="Editor">
 				<CalciteTabs bordered={false}>
 					<CalciteTabNav slot="tab-nav">
 						<CalciteTabTitle className= "web-editor-title-l1"  is-active={drawActive}> Draw Feature</CalciteTabTitle>
