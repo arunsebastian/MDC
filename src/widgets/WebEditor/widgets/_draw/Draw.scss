@@ -12,4 +12,10 @@
         margin-top:5px;
         border:1px solid red;
     }
+    .esri-item-list__list-item--selected{
+        &.un-selected{
+            border:none!important;
+            outline: none !important;
+        }
+    }
 }
