@@ -12,12 +12,12 @@ interface DrawProps{
 const Draw = (props:DrawProps) => {
 		const drawRef = useRef<HTMLCalciteBlockElement>()
 		const {view,layers} = props;
+		const [templatePicker,setTemplatePicker]  = useState<__esri.FeatureTemplates|null>(null)
 		
 		//the following doesnt need to be a  state param as its not a dependancy
 		let selectedTemplateItem:__esri.TemplateItem | null= null;
 		const drawViewModel = new DrawViewModel({view:null});
-
-		const clearSelectedTemplate = (templatePicker:any,keepHistory?:boolean) =>{
+		const clearSelectedTemplate = (keepHistory?:boolean) =>{
 			const selectedNode = drawRef.current.querySelector("li.esri-item-list__list-item--selected");
 			if(selectedNode){
 				selectedNode.classList.add("un-selected");
@@ -27,7 +27,6 @@ const Draw = (props:DrawProps) => {
 			if(!keepHistory){
 				selectedTemplateItem = null;
 			}
-			templatePicker.viewModel.refresh();
 			drawViewModel.deactivateDraw();
 		}
 		const styleSelectedTemplate =() =>{
@@ -36,39 +35,48 @@ const Draw = (props:DrawProps) => {
 				selectedNode.classList.remove("un-selected");
 			}
 		}
-		useEffect(()=>{
-			if(view && layers.length >0 && drawRef.current){
-				drawViewModel.update(view);
-				if(drawRef.current){
-					drawRef.current.replaceChildren();
-				}
-				const templatePicker = new FeatureTemplates({
+		const renderTemplatePicker =()=>{
+			if(!templatePicker){
+				const tpl =new FeatureTemplates({
 					container: drawRef.current,
 					viewModel: new FeatureTemplatesViewModel({
-						layers:layers
+						layers:layers?layers:[]
 					})
 				});
-				templatePicker.on("select",(templateInfo:any)=>{
+				tpl.on("select",(templateInfo:any)=>{
 					styleSelectedTemplate();
 					const clickedItem = templateInfo.item;
 					if(!selectedTemplateItem || (clickedItem.layer.uid !== (selectedTemplateItem.layer as any).uid)){
 						selectedTemplateItem = clickedItem;
 						if(templateInfo?.template.drawingTool && drawViewModel){
+							if(!drawViewModel.isReady()){
+								drawViewModel.update(view);
+							}
 							drawViewModel.activateDraw(templateInfo.template.drawingTool);
 						}
 					}else{
-						clearSelectedTemplate(templatePicker,false)
+						clearSelectedTemplate(false)
 					}
 				});
-				drawViewModel.update(view);
+				setTemplatePicker(tpl)
+			}else{
+				templatePicker.viewModel.set("layers",layers?layers:[]);
 			}
-		},[view,layers.length]);
+			
+		}
+		
+		useEffect(()=>{
+			if(view && layers.length >0){
+				drawViewModel.update(view);
+				renderTemplatePicker();
+			}
+		},[view,layers.length,drawViewModel,renderTemplatePicker]);
 
 		useEffect(()=>{
 			if(drawViewModel){
 				drawViewModel.on("feature-added",(graphic)=>{
 					console.log(graphic)
-					//clearSelectedTemplate(true)
+					clearSelectedTemplate(true)
 				});
 				drawViewModel.on("feature-updated",(graphic)=>{
 					console.log(graphic)

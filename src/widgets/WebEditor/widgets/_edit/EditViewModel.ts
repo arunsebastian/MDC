@@ -6,20 +6,19 @@ import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel";
 import { subclass} from "@arcgis/core/core/accessorSupport/decorators";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
-interface DrawViewModelProperties{
-	view?:__esri.MapView;
-	sketch?:__esri.SketchViewModel
+interface EditViewModelProperties{
+	view:__esri.MapView;
 }
 
 
-@subclass("DrawViewModel")
-export default class DrawViewModel extends EventedMixin(Accessor){
+@subclass("EditViewModel")
+export default class EditViewModel extends EventedMixin(Accessor){
 	view:__esri.MapView=undefined;
 	sketch:__esri.SketchViewModel=undefined;
 	sketchLayerTitle:string="sketch";
 	layer:__esri.GraphicsLayer = new GraphicsLayer({title:this.sketchLayerTitle});
 	handles:{}={}
-    constructor(params:DrawViewModelProperties) {
+    constructor(params:EditViewModelProperties) {
 		super(params);
         this.set(params);
 		if(this.get("view")){
@@ -34,23 +33,23 @@ export default class DrawViewModel extends EventedMixin(Accessor){
 		this.set("sketch",new SketchViewModel({
 			view:this.view,
 			layer: this.layer,
-			defaultCreateOptions: {
-				mode:"hybrid"
+			defaultUpdateOptions:{
+				tool:'reshape',
+				enableScaling: true,
+				preserveAspectRatio: true,
+				toggleToolOnClick:true,
+				reshapeOptions:{
+					vertexOperation:"move-xy"
+				}
 			}
 		}));
 		this.handles ={
-			"create":this.sketch.on("create", (info:any)=> {
-				if(info.state === 'complete' && info.graphic){
-					this.emit("feature-added",info.graphic);
+			"update":this.sketch.on("update", (info:any)=> {
+				if(info.toolEventInfo?.type.includes("stop") && info.graphic){
+					this.emit("feature-updated",info.graphic);
 				}
 			})
 		};
-		// ,
-		// 	"update":this.sketch.on("update", (info:any)=> {
-		// 		if(info.toolEventInfo?.type.includes("stop") && info.graphic){
-		// 			this.emit("feature-updated",info.graphic);
-		// 		}
-		// 	})
 	}
 	update = (view:__esri.MapView) =>{
 		this.set("view",view);
@@ -82,11 +81,11 @@ export default class DrawViewModel extends EventedMixin(Accessor){
 			this.handles[key].remove();
 		}
 	}
-	activateDraw = (geometryString:any)=>{
+	activateEdit = (geometryString:any)=>{
 		this._clearLayer();
-		this.sketch.create(geometryString);
+		this.sketch.update(geometryString);
 	}
-	deactivateDraw = () =>{
+	deactivateEdit= () =>{
 		this.sketch.cancel();
 		this._clearLayer();
 	}
