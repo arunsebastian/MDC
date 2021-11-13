@@ -1,11 +1,12 @@
-import {useEffect,useLayoutEffect,useCallback,useState } from "react";
+import {useEffect,useRef,useCallback,useState, useLayoutEffect } from "react";
 import { 
 	CalciteBlock,
 	CalciteTabs, CalciteTab, 
 	CalciteTabNav, CalciteTabTitle,
 } from "@esri/calcite-components-react/dist/components";
 import {whenTrueOnce} from "@arcgis/core/core/watchUtils";
-import Draw from "./widgets/_draw/Draw";
+import Draw ,{AddFeatureInfo} from "./widgets/_draw/Draw";
+import Edit,{EditFeatureInfo} from "./widgets/_edit/Edit";
 
 import "./Editor.scss";
 
@@ -14,18 +15,30 @@ interface EditorProps{
 	startupAsDraw?:boolean
 }
 const Editor = (props:EditorProps) => {
-		// const drawRef= useRef<HTMLCalciteTabElement>(null);
-		// const editRef = useRef<HTMLCalciteTabElement>(null);
-		const [drawActive,setDrawActive] = useState<boolean>(false);
-		const [editableLayers,setEditableLayers]=useState<__esri.FeatureLayer[]>([])
+		const editorRef = useRef<HTMLCalciteBlockElement>(null)
+		const [editableLayers,setEditableLayers]=useState<__esri.FeatureLayer[]>([]);
+		const [editableFeaturesInfo,setEditableFeaturesInfo]=useState<EditFeatureInfo[]>([]);
 		const {view} = props;
 
 		const activateDraw = () =>{
-			setDrawActive(true);
+			const drawTab = document.querySelector("calcite-tab-title[tab^='draw']");
+			if(drawTab){
+				const ev = new KeyboardEvent('keydown', { key: 'Enter',keyCode: 13});
+				drawTab?.dispatchEvent(ev);
+			}
 		}
 
 		const activateEdit =() =>{
-			setDrawActive(false);
+			const editTab = document.querySelector("calcite-tab-title[tab^='edit']");
+			if(editTab){
+				const ev = new KeyboardEvent('keydown', { key: 'Enter',keyCode: 13});
+				editTab?.dispatchEvent(ev);
+			}
+		}
+
+		const prepareFeaturesForEdit = (info:AddFeatureInfo)=>{
+			setEditableFeaturesInfo([info as EditFeatureInfo]);
+			activateEdit();
 		}
 
 		const _isLayerLoaded= useCallback(async(layer:__esri.FeatureLayer)=>{
@@ -65,25 +78,26 @@ const Editor = (props:EditorProps) => {
 		},[props,view,_waitForLayerLoad]);
 
 		useLayoutEffect(()=>{
-			if(!props.startupAsDraw && drawActive){
-				console.log("activating edit");
-				setDrawActive(false);
+			if(!props.startupAsDraw && editorRef.current){
+				activateEdit();
 			}
-		},[props,drawActive,setDrawActive])
+		},[])
 		
 		
 
 		return  (
-			<CalciteBlock open={true} className="web-editor" collapsible={true} heading="Editor">
+			<CalciteBlock ref = {editorRef} open={true} className="web-editor" collapsible={true} heading="Editor">
 				<CalciteTabs bordered={false}>
 					<CalciteTabNav slot="tab-nav">
-						<CalciteTabTitle className= "web-editor-title-l1"  is-active={drawActive}> Draw Feature</CalciteTabTitle>
-						<CalciteTabTitle className= "web-editor-title-l1"  is-active={!drawActive}>Edit Feature</CalciteTabTitle>
+						<CalciteTabTitle className= "web-editor-title-l1" tab="draw"> Draw Feature</CalciteTabTitle>
+						<CalciteTabTitle className= "web-editor-title-l1"   tab="edit">Edit Feature</CalciteTabTitle>
 					</CalciteTabNav>
-					<CalciteTab className="web-editor-tab" is-active={drawActive}>
-						<Draw view={view} layers={editableLayers}></Draw>
+					<CalciteTab className="web-editor-tab" tab="draw">
+						<Draw view={view} onFeatureAdded={prepareFeaturesForEdit} layers={editableLayers}></Draw>
 					</CalciteTab>
-					<CalciteTab className="web-editor-tab" is-active={!drawActive}></CalciteTab>
+					<CalciteTab  className="web-editor-tab" tab="edit">
+						<Edit view={view} editableFeaturesInfo ={editableFeaturesInfo}></Edit>
+					</CalciteTab>
 				</CalciteTabs>
 			</CalciteBlock>
 			

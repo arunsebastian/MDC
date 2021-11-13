@@ -45,12 +45,6 @@ export default class DrawViewModel extends EventedMixin(Accessor){
 				}
 			})
 		};
-		// ,
-		// 	"update":this.sketch.on("update", (info:any)=> {
-		// 		if(info.toolEventInfo?.type.includes("stop") && info.graphic){
-		// 			this.emit("feature-updated",info.graphic);
-		// 		}
-		// 	})
 	}
 	update = (view:__esri.MapView) =>{
 		this.set("view",view);

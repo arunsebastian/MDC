@@ -5,13 +5,20 @@ import FeatureTemplatesViewModel from "@arcgis/core/widgets/FeatureTemplates/Fea
 import DrawViewModel from "./DrawViewModel";
 import "./Draw.scss";
 
+export interface AddFeatureInfo{
+	layer:__esri.FeatureLayer,
+	features:__esri.Graphic[]
+}
+
 interface DrawProps{
 	view:__esri.MapView,
-	layers:__esri.FeatureLayer[]
+	layers:__esri.FeatureLayer[],
+	onFeatureAdded?:(info:AddFeatureInfo)=>void
 }
+
 const Draw = (props:DrawProps) => {
 		const drawRef = useRef<HTMLCalciteBlockElement>()
-		const {view,layers} = props;
+		const {view,layers,onFeatureAdded} = props;
 		const [templatePicker,setTemplatePicker]  = useState<__esri.FeatureTemplates|null>(null)
 		
 		//the following doesnt need to be a  state param as its not a dependancy
@@ -21,8 +28,6 @@ const Draw = (props:DrawProps) => {
 			const selectedNode = drawRef.current.querySelector("li.esri-item-list__list-item--selected");
 			if(selectedNode){
 				selectedNode.classList.add("un-selected");
-				(document.activeElement as any).blur();
-				(view as any).surface.focus();
 			}
 			if(!keepHistory){
 				selectedTemplateItem = null;
@@ -74,13 +79,14 @@ const Draw = (props:DrawProps) => {
 
 		useEffect(()=>{
 			if(drawViewModel){
-				drawViewModel.on("feature-added",(graphic)=>{
-					console.log(graphic)
-					clearSelectedTemplate(true)
+				drawViewModel.on("feature-added",(graphic:__esri.Graphic)=>{
+					const _gra = graphic.clone();
+					if(onFeatureAdded){
+						_gra.attributes = selectedTemplateItem.template.prototype.attributes;
+						onFeatureAdded({features:[graphic],layer:selectedTemplateItem.layer})
+					}
+					clearSelectedTemplate(true);
 				});
-				drawViewModel.on("feature-updated",(graphic)=>{
-					console.log(graphic)
-				})
 			}
 		},[drawViewModel]);
 		

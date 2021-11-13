@@ -1,0 +1,13 @@
+.web-editor-edit{
+    width:100%;
+    display: flex;
+    flex-flow: column;
+    .web-editor-edit-view{
+        border:1px solid red;
+    }
+    .web-editor-edit-actionpad{
+        height:30px;
+        margin-top:5px;
+        border:1px solid red;
+    }
+}
