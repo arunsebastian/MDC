@@ -5,7 +5,9 @@
     .web-editor-draw-template{
         flex:1;
         min-height:50px;
-        max-height:300px;
+        .esri-item-list__scroller{
+            max-height: 300px !important;
+        }
     }
     .web-editor-draw-actionpad{
         height:30px;

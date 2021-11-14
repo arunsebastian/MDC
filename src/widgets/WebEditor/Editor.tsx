@@ -55,7 +55,12 @@ const Editor = (props:EditorProps) => {
 				await _isLayerLoaded(layer as __esri.FeatureLayer);
 			});
 			return featureLayers;
-		},[_isLayerLoaded,view.map.allLayers])
+		},[_isLayerLoaded,view.map.allLayers]);
+
+		const handleDrawTemplateSelection = (item:__esri.TemplateItem) =>{
+			//clear edits
+			setEditableFeaturesInfo(null);
+		}
 
 		//Guess the below commented workflow of getting layer infos has to
 		// go to edit widget
@@ -79,12 +84,7 @@ const Editor = (props:EditorProps) => {
 			});
 		},[props,view,_waitForLayerLoad]);
 
-		useEffect(()=>{
-			if(drawActive){
-				//check for any editor
-				setEditableFeaturesInfo(null);
-			}
-		},[drawActive])
+		
 
 		useLayoutEffect(()=>{
 			if(!props.startupAsDraw){
@@ -100,7 +100,7 @@ const Editor = (props:EditorProps) => {
 						<CalciteTabTitle onClick={()=>setDrawActive(false)} className= "web-editor-title-l1"   tab="edit">Edit Feature</CalciteTabTitle>
 					</CalciteTabNav>
 					<CalciteTab className="web-editor-tab" tab="draw">
-						<Draw activated={drawActive} view={view} onFeatureAdded={prepareFeaturesForEdit} layers={editableLayers}></Draw>
+						<Draw activated={drawActive} view={view} onDrawTemplateSelected={handleDrawTemplateSelection} onFeatureAdded={prepareFeaturesForEdit} layers={editableLayers}></Draw>
 					</CalciteTab>
 					<CalciteTab  className="web-editor-tab" tab="edit">
 						<Edit activated={!drawActive} view={view} editableFeaturesInfo ={editableFeaturesInfo}></Edit>

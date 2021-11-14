@@ -3,7 +3,19 @@
     display: flex;
     flex-flow: column;
     .web-editor-edit-view{
-        border:1px solid red;
+        .web-editor-view-tabs{
+            overflow: hidden !important;
+            .web-editor-attr-editor{
+                &.esri-feature-form{
+                    padding:0px !important;
+                    .esri-feature-form__form{
+                        padding:10px;
+                    }
+                }
+                max-height:300px;
+                overflow-y: auto;
+            }
+        }
     }
     .web-editor-edit-actionpad{
         height:30px;

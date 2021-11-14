@@ -15,6 +15,7 @@ interface DrawProps{
 	layers:__esri.FeatureLayer[],
 	activated:boolean,
 	onFeatureAdded?:(info:AddFeatureInfo)=>void
+	onDrawTemplateSelected:(item:__esri.TemplateItem)=>void;
 }
 
 //the following doesnt need to be a  state param as its not a dependancy
@@ -24,7 +25,7 @@ let clickHandle:any;
 
 const Draw = (props:DrawProps) => {
 		const drawRef = useRef<HTMLCalciteBlockElement>()
-		const {view,layers,activated,onFeatureAdded} = props;
+		const {view,layers,activated,onFeatureAdded,onDrawTemplateSelected} = props;
 		const [templatePicker,setTemplatePicker]  = useState<__esri.FeatureTemplates|null>(null)
 		const clearSelectedTemplate = (keepHistory?:boolean) =>{
 			const selectedNode = drawRef.current.querySelector("li.esri-item-list__list-item--selected");
@@ -57,6 +58,7 @@ const Draw = (props:DrawProps) => {
 						selectedTemplateItem = clickedItem;
 						if(templateInfo?.template.drawingTool && drawViewModel){
 							drawViewModel.activateDraw(templateInfo.template.drawingTool);
+							onDrawTemplateSelected(selectedTemplateItem)
 						}
 					}else{
 						clearSelectedTemplate(false)
