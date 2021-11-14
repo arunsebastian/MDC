@@ -13,17 +13,19 @@ export interface AddFeatureInfo{
 interface DrawProps{
 	view:__esri.MapView,
 	layers:__esri.FeatureLayer[],
+	activated:boolean,
 	onFeatureAdded?:(info:AddFeatureInfo)=>void
 }
 
+//the following doesnt need to be a  state param as its not a dependancy
+const drawViewModel = new DrawViewModel({view:null});
+let selectedTemplateItem:__esri.TemplateItem | null= null;
+let clickHandle:any;
+
 const Draw = (props:DrawProps) => {
 		const drawRef = useRef<HTMLCalciteBlockElement>()
-		const {view,layers,onFeatureAdded} = props;
+		const {view,layers,activated,onFeatureAdded} = props;
 		const [templatePicker,setTemplatePicker]  = useState<__esri.FeatureTemplates|null>(null)
-		
-		//the following doesnt need to be a  state param as its not a dependancy
-		let selectedTemplateItem:__esri.TemplateItem | null= null;
-		const drawViewModel = new DrawViewModel({view:null});
 		const clearSelectedTemplate = (keepHistory?:boolean) =>{
 			const selectedNode = drawRef.current.querySelector("li.esri-item-list__list-item--selected");
 			if(selectedNode){
@@ -54,9 +56,6 @@ const Draw = (props:DrawProps) => {
 					if(!selectedTemplateItem || (clickedItem.layer.uid !== (selectedTemplateItem.layer as any).uid)){
 						selectedTemplateItem = clickedItem;
 						if(templateInfo?.template.drawingTool && drawViewModel){
-							if(!drawViewModel.isReady()){
-								drawViewModel.update(view);
-							}
 							drawViewModel.activateDraw(templateInfo.template.drawingTool);
 						}
 					}else{
@@ -81,14 +80,35 @@ const Draw = (props:DrawProps) => {
 			if(drawViewModel){
 				drawViewModel.on("feature-added",(graphic:__esri.Graphic)=>{
 					const _gra = graphic.clone();
+					clearSelectedTemplate(true);
 					if(onFeatureAdded){
 						_gra.attributes = selectedTemplateItem.template.prototype.attributes;
 						onFeatureAdded({features:[graphic],layer:selectedTemplateItem.layer})
 					}
-					clearSelectedTemplate(true);
 				});
 			}
 		},[drawViewModel]);
+
+		useEffect(()=>{
+			if(activated){
+				if(clickHandle){
+					clickHandle.remove();
+					clickHandle = null;
+				}
+				
+				//detach map click
+			}else{
+				console.log("draw deactivated")
+				//attach map click
+				if(clickHandle){
+					clickHandle.remove();
+				}
+				clickHandle=view.on("click",()=>{
+					console.log("Click to edit")
+					//query features on click, to edit
+				});
+			}
+		},[activated])
 		
 		return  (
 			<CalcitePanel className="web-editor-draw">

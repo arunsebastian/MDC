@@ -81,9 +81,13 @@ export default class EditViewModel extends EventedMixin(Accessor){
 			this.handles[key].remove();
 		}
 	}
-	activateEdit = (geometryString:any)=>{
+	activateEdit = (feature:__esri.Graphic)=>{
 		this._clearLayer();
-		this.sketch.update(geometryString);
+		this.layer.graphics.add(feature);
+		this.sketch.update(feature);
+		if(!this.sketch.get("activeLineSymbol")){
+			this.sketch.set("activeLineSymbol",this.sketch.get("polyLineSymbol"))
+		}
 	}
 	deactivateEdit= () =>{
 		this.sketch.cancel();
