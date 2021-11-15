@@ -9,23 +9,30 @@ interface FeatureAttributeEditorProps{
 	feature:__esri.Graphic
 }
 const featureForm = new FeatureForm();
+let featureFormChangeHandle:any;
 const FeatureAttributeEditor = (props:FeatureAttributeEditorProps) => {
 	const {layer,feature} = props;
 	const attrRef = useRef<HTMLCalcitePanelElement>(null);
 	
 	useEffect(()=>{
-		if(layer && feature){
-			featureForm.set({
-				layer,feature
-			})
+		if(featureFormChangeHandle){
+			featureFormChangeHandle.remove();
 		}
+		featureFormChangeHandle = featureForm.on("value-change",(info:any)=>{
+			if(info.valid){
+				feature.attributes[info.fieldName] =info.value;
+			}
+		});
+		featureForm.set({
+			layer,feature
+		});
 	},[layer,feature]);
 
 	useEffect(()=>{
-		if(attrRef.current){
+		if(attrRef.current && !featureForm.get("container")){
 			featureForm.set("container",attrRef.current);
 		}
-	},[attrRef])
+	},[attrRef]);
 
 	return  (
 		<CalcitePanel ref={attrRef} className="web-editor-attr-editor"></CalcitePanel>

@@ -35,7 +35,7 @@ export default class DrawViewModel extends EventedMixin(Accessor){
 			view:this.view,
 			layer: this.layer,
 			defaultCreateOptions: {
-				mode:"hybrid"
+				mode:"click"
 			}
 		}));
 		this.handles ={

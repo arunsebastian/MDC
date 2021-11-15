@@ -1,26 +1,33 @@
 import {useEffect} from "react";
-import {CalcitePanel,CalciteActionPad,
-	CalciteTabs,CalciteTabNav,CalciteTabTitle,
-	CalciteTab
+import {CalcitePanel,CalciteTabs,CalciteTabNav,CalciteTabTitle,
+	CalciteTab,CalciteButton
 } from "@esri/calcite-components-react/dist/components";
 import EditViewModel from "./EditViewModel";
 import FeatureAttributeEditor from "./_components/FeatureAttributeEditor";
+import { whenTrueOnce } from "@arcgis/core/core/watchUtils";
+import Graphic from "@arcgis/core/Graphic";
 import "./Edit.scss";
+
 
 export interface EditFeatureInfo{
 	layer:__esri.FeatureLayer,
-	features:__esri.Graphic[]
+	features:__esri.Graphic[],
+	mode:string
 } 
 
 interface EditProps{
 	view:__esri.MapView,
 	editableFeaturesInfo:EditFeatureInfo[],
+	onFeatureCreated:(info:EditFeatureInfo)=>void;
 	activated:boolean
 }
 
+const editMode="edit";
+const captureMode="add";
+
 const editViewModel = new EditViewModel({view:null});
 const Edit = (props:EditProps) => {
-		const {view,editableFeaturesInfo,activated} = props;
+		const {view,editableFeaturesInfo,activated,onFeatureCreated} = props;
 		useEffect(()=>{
 			if(view){
 				editViewModel.update(view);
@@ -28,7 +35,10 @@ const Edit = (props:EditProps) => {
 		},[view]);
 
 		useEffect(()=>{
-			if(activated && editableFeaturesInfo){
+			if(activated && editableFeaturesInfo instanceof Array && editableFeaturesInfo.length>0){
+				// i am here
+				// add loader while save
+				// Invetsigate the black fill
 				editViewModel.activateEdit(editableFeaturesInfo[0].features[0]);
 			}
 		},[activated,editableFeaturesInfo]);
@@ -44,6 +54,53 @@ const Edit = (props:EditProps) => {
 		const getFeatureToEdit =() =>{
 			return (editableFeaturesInfo &&  editableFeaturesInfo[0]?.features) ? editableFeaturesInfo[0].features[0]:null;
 		}
+
+		const refreshLayer = (layer:__esri.FeatureLayer) =>{
+			const promise = new Promise((resolve:Function)=>{
+				whenTrueOnce(layer,"loaded",()=>{
+					resolve()
+				});
+				layer.refresh();
+			});
+			return promise;
+		}
+
+		const saveFeature=() =>{
+			const mode = editableFeaturesInfo[0].mode;
+			const layer =  editableFeaturesInfo[0].layer;
+			editViewModel.deactivateEdit();
+			if(mode === captureMode){
+				layer.applyEdits({
+					addFeatures :editableFeaturesInfo[0].features
+				}).then((result:any) => {
+					// Get the objectId of the newly added feature.
+					// Call selectFeature function to highlight the new feature.
+					if (result.addFeatureResults.length > 0) {
+						const objectId = result.addFeatureResults[0].objectId;
+						refreshLayer(layer).then(()=>{
+							layer.queryFeatures({
+								objectIds: [objectId],
+								outFields: ["*"],
+								returnGeometry: true
+							}).then((results:any) => {
+								  if (results.features.length > 0) {
+									const editFeature = results.features[0];
+									const graphic = new Graphic({
+										attributes:editFeature.attributes,
+										geometry:editFeature.geometry.clone()
+									});
+									console.log(graphic);
+									onFeatureCreated({layer:layer,features:[graphic],mode:"edit"});
+								}
+							});
+						})
+					}
+				})
+			}else if(mode === editMode){
+				alert("edit mode")
+
+			}
+		}
 		
 		return  (
 			<CalcitePanel className="web-editor-edit">
@@ -58,16 +115,12 @@ const Edit = (props:EditProps) => {
 						</CalciteTab>
 						<CalciteTab  className="web-editor-tab" tab="vertices"></CalciteTab>
 					</CalciteTabs>
+					<CalciteButton width="half" slot="footer-actions" appearance="outline">Cancel</CalciteButton>
+        			<CalciteButton width="half" slot="footer-actions" onClick={saveFeature}>Save</CalciteButton>
 				</CalcitePanel>
 				<CalcitePanel style={{display:isFeaturesReadyToEdit()?"none":""}} className="web-editor-inactive w-100">
 						Click on a feature in map to edit.
 				</CalcitePanel>
-				<CalciteActionPad 
-					style={{display:isFeaturesReadyToEdit()?"":"none"}}
-					expandDisabled={true} 
-					layout="horizontal"
-					className="web-editor-edit-actionpad w-100">
-				</CalciteActionPad>
 			</CalcitePanel>
   		)
 }

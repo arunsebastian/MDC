@@ -20,7 +20,7 @@ const Editor = (props:EditorProps) => {
 		const [editableFeaturesInfo,setEditableFeaturesInfo]=useState<EditFeatureInfo[]>([]);
 		const [drawActive,setDrawActive] = useState<boolean>(true);
 
-		const activateDraw = () =>{
+		const activateDrawView = () =>{
 			const drawTab = document.querySelector("calcite-tab-title[tab^='draw']");
 			if(drawTab){
 				const ev = new KeyboardEvent('keydown', { key: 'Enter',keyCode: 13});
@@ -29,7 +29,7 @@ const Editor = (props:EditorProps) => {
 			}
 		}
 
-		const activateEdit =() =>{
+		const activateEditView =() =>{
 			const editTab = document.querySelector("calcite-tab-title[tab^='edit']");
 			if(editTab){
 				const ev = new KeyboardEvent('keydown', { key: 'Enter',keyCode: 13});
@@ -38,9 +38,11 @@ const Editor = (props:EditorProps) => {
 			}
 		}
 
-		const prepareFeaturesForEdit = (info:AddFeatureInfo)=>{
-			setEditableFeaturesInfo([info as EditFeatureInfo]);
-			activateEdit();
+		const prepareFeaturesForEdit = (info:AddFeatureInfo|EditFeatureInfo)=>{
+			setEditableFeaturesInfo([info]);
+			if(drawActive){
+				activateEditView();
+			}
 		}
 
 		const _isLayerLoaded= useCallback(async(layer:__esri.FeatureLayer)=>{
@@ -57,7 +59,7 @@ const Editor = (props:EditorProps) => {
 			return featureLayers;
 		},[_isLayerLoaded,view.map.allLayers]);
 
-		const handleDrawTemplateSelection = (item:__esri.TemplateItem) =>{
+		const handleSketchTemplateSelection = (item:__esri.TemplateItem) =>{
 			//clear edits
 			setEditableFeaturesInfo(null);
 		}
@@ -88,7 +90,7 @@ const Editor = (props:EditorProps) => {
 
 		useLayoutEffect(()=>{
 			if(!props.startupAsDraw){
-				activateEdit();
+				activateEditView();
 			}
 		},[]);
 
@@ -100,10 +102,10 @@ const Editor = (props:EditorProps) => {
 						<CalciteTabTitle onClick={()=>setDrawActive(false)} className= "web-editor-title-l1"   tab="edit">Edit Feature</CalciteTabTitle>
 					</CalciteTabNav>
 					<CalciteTab className="web-editor-tab" tab="draw">
-						<Draw activated={drawActive} view={view} onDrawTemplateSelected={handleDrawTemplateSelection} onFeatureAdded={prepareFeaturesForEdit} layers={editableLayers}></Draw>
+						<Draw activated={drawActive} view={view} onSketchTemplateSelected={handleSketchTemplateSelection} onFeatureSketched={prepareFeaturesForEdit} layers={editableLayers}></Draw>
 					</CalciteTab>
 					<CalciteTab  className="web-editor-tab" tab="edit">
-						<Edit activated={!drawActive} view={view} editableFeaturesInfo ={editableFeaturesInfo}></Edit>
+						<Edit activated={!drawActive} view={view} editableFeaturesInfo ={editableFeaturesInfo} onFeatureCreated={prepareFeaturesForEdit}></Edit>
 					</CalciteTab>
 				</CalciteTabs>
 			</CalciteBlock>
