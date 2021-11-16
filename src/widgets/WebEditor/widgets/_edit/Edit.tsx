@@ -44,6 +44,7 @@ const Edit = (props:EditProps) => {
 	useEffect(()=>{
 		if(activated && editableFeaturesInfo instanceof Array && editableFeaturesInfo.length>0){
 			editViewModel.activateEdit(editableFeaturesInfo[0].layer,editableFeaturesInfo[0].features[0]);
+			hideEditedGraphicsInLayer()
 		}
 	},[activated,editableFeaturesInfo]);
 
@@ -71,21 +72,45 @@ const Edit = (props:EditProps) => {
 	}
 
 	const refreshLayer = async(layer:__esri.FeatureLayer) =>{
-		await whenTrueOnce(layer,"loaded")
+		layer.definitionExpression= layer.get("_defaultDefinitionExpression")?layer.get("_defaultDefinitionExpression"):"1=1" ;
+		layer.refresh();
+		await whenTrueOnce(layer,"loaded");
+		return layer.loaded
 	}
 
 	const cancelEditing = () =>{
 		//check for dirty features
-		if(onCancelEditing){
-			onCancelEditing();
+		editViewModel.deactivateEdit();
+		editViewModel.set("dirty",false);
+		if(editableFeaturesInfo[0]?.layer){
+			showEditedFeaturesInLayer();
+			if(onCancelEditing){
+				onCancelEditing();
+			}
 		}
-		
+	}
+
+	const hideEditedGraphicsInLayer = () =>{
+		if(editableFeaturesInfo instanceof Array && editableFeaturesInfo.length > 0){
+			editableFeaturesInfo.forEach((info:EditFeatureInfo)=>{
+				if(info.mode === editMode){
+					const objectId = info.features[0].attributes[info.layer.objectIdField];
+					info.layer.definitionExpression= `${info.layer.objectIdField} <> ${objectId}`;
+				}
+			});
+		}
+	}
+
+	const showEditedFeaturesInLayer = () =>{
+		editableFeaturesInfo.forEach((info:EditFeatureInfo)=>{
+			
+			refreshLayer(info.layer)
+		});
 	}
 
 	const saveFeature=() =>{
 		const mode = editableFeaturesInfo[0].mode;
 		const layer =  editableFeaturesInfo[0].layer;
-		editViewModel.deactivateEdit();
 		if(mode === captureMode){
 			layer.applyEdits({
 				addFeatures :editableFeaturesInfo[0].features
@@ -106,7 +131,7 @@ const Edit = (props:EditProps) => {
 								geometry:editFeature.geometry.clone(),
 								symbol:editableFeaturesInfo[0].features[0].symbol
 							});
-							layer.definitionExpression= `${layer.objectIdField} <> ${objectId}`;
+							editViewModel.deactivateEdit();
 							onFeatureCreated({layer:layer,features:[graphic],mode:"edit"});
 						}
 					});
@@ -118,9 +143,11 @@ const Edit = (props:EditProps) => {
 			}).then((result:any) => {
 				editViewModel.set("dirty",false);
 				if (result.updateFeatureResults.length > 0) {
-					//const objectId = result.updateFeatureResults[0].objectId;
-					layer.definitionExpression= layer.get("_defaultDefinitionExpression")
-					refreshLayer(layer);
+					//force a loader to make a feedback that the save process is completed
+					// and take off the below two lines
+					
+					// editViewModel.deactivateEdit();
+					// showEditedFeaturesInLayer();
 					if(onFeatureUpdated){
 						onFeatureUpdated(editableFeaturesInfo[0]);
 					}
@@ -159,9 +186,10 @@ const Edit = (props:EditProps) => {
 					</CalciteTab>
 					<CalciteTab  className="web-editor-tab" tab="vertices"></CalciteTab>
 				</CalciteTabs>
+				<CalciteButton width="auto" slot="footer-actions" onClick={deleteFeature} appearance="outline">Delete</CalciteButton>
 				<CalciteButton width="auto" slot="footer-actions" onClick={cancelEditing} appearance="outline">Cancel</CalciteButton>
 				<CalciteButton width="auto" slot="footer-actions" onClick={saveFeature}>Save</CalciteButton>
-				<CalciteButton width="auto" slot="footer-actions" onClick={deleteFeature}>Delete</CalciteButton>
+				
 			</CalcitePanel>
 			<CalcitePanel style={{display:isFeaturesReadyToEdit()?"none":""}} className="web-editor-inactive w-100">
 					Click on a feature in map to edit.
@@ -169,5 +197,4 @@ const Edit = (props:EditProps) => {
 		</CalcitePanel>
 	)
 }
-
 export default Edit;

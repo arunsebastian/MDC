@@ -39,14 +39,14 @@ const Editor = (props:EditorProps) => {
 			}
 		}
 
-		const initialiseEditWorkflow = (info:AddFeatureInfo|EditFeatureInfo)=>{
+		const initializeEditWorkflow = (info:AddFeatureInfo|EditFeatureInfo)=>{
 			setEditableFeaturesInfo([info]);
 			if(drawActive){
 				activateEditView();
 			}
 		}
 
-		const initialiseDrawWorkflow = () =>{
+		const initializeDrawWorkflow = () =>{
 			setEditableFeaturesInfo(null);
 			if(!drawActive){
 				activateDrawView();
@@ -64,6 +64,7 @@ const Editor = (props:EditorProps) => {
 			}).toArray()  as __esri.FeatureLayer[];
 			featureLayers.forEach(async(layer:__esri.Layer)=>{
 				await _isLayerLoaded(layer as __esri.FeatureLayer);
+				layer.set("outFields",['*']);
 				layer.set("_defaultDefinitionExpression",(layer as __esri.FeatureLayer).definitionExpression)
 			});
 			return featureLayers;
@@ -98,10 +99,10 @@ const Editor = (props:EditorProps) => {
 						<CalciteTabTitle onClick={()=>setDrawActive(false)} className= "web-editor-title-l1"   tab="edit">Edit Feature</CalciteTabTitle>
 					</CalciteTabNav>
 					<CalciteTab className="web-editor-tab" tab="draw">
-						<Draw activated={drawActive} view={view} templateFromHistory={templateFromHistory} onSketchTemplateSelected={handleSketchTemplateSelection} onFeatureSketched={initialiseEditWorkflow} layers={editableLayers}></Draw>
+						<Draw activated={drawActive} view={view} templateFromHistory={templateFromHistory} onSketchTemplateSelected={handleSketchTemplateSelection} onFeatureSketched={initializeEditWorkflow} layers={editableLayers}></Draw>
 					</CalciteTab>
 					<CalciteTab  className="web-editor-tab" tab="edit">
-						<Edit activated={!drawActive} view={view} editableFeaturesInfo ={editableFeaturesInfo} onFeatureCreated={initialiseEditWorkflow} onCancelEditing={initialiseDrawWorkflow} ></Edit>
+						<Edit activated={!drawActive} view={view} editableFeaturesInfo ={editableFeaturesInfo} onFeatureCreated={initializeEditWorkflow} onCancelEditing={initializeDrawWorkflow} ></Edit>
 					</CalciteTab>
 				</CalciteTabs>
 			</CalciteBlock>

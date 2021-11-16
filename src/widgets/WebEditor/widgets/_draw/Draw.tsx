@@ -3,6 +3,7 @@ import {CalcitePanel} from "@esri/calcite-components-react/dist/components";
 import FeatureTemplates from "@arcgis/core/widgets/FeatureTemplates";
 import FeatureTemplatesViewModel from "@arcgis/core/widgets/FeatureTemplates/FeatureTemplatesViewModel";
 import DrawViewModel from "./DrawViewModel";
+import Graphic from "@arcgis/core/Graphic";
 import "./Draw.scss";
 
 
@@ -125,17 +126,27 @@ const Draw = (props:DrawProps) => {
 					clickHandle.remove();
 					clickHandle = null;
 				}
-				if(selectedTemplateItem){
-					templatePicker.viewModel.select(selectedTemplateItem);
-				}
 			}else{
 				//attach map click
 				if(clickHandle){
 					clickHandle.remove();
 				}
-				clickHandle=view.on("click",()=>{
-					//NEXT HERE
-					//query features on click, to edit
+				clickHandle=view.on("click",(event:any)=>{
+					// view.hitTest(event).then((response:any) =>{
+					// 	let results = response.results;
+					// 	if (results.length > 0) {
+					// 		//TO expand to multi feature editing
+					// 		if(results[0].graphic){
+					// 			const layer = results[0].graphic.layer;
+					// 			let editGraphic = new Graphic({
+					// 				attributes:results[0].graphic.attributes,
+					// 				geometry:results[0].graphic.geometry.clone(),
+					// 				symbol:((layer.renderer) as any).symbol
+					// 			})
+					// 			onFeatureSketched({features:[editGraphic],layer:layer,mode:"edit"});
+					// 		}
+					// 	}
+					// });
 				});
 			}
 		},[activated]);
