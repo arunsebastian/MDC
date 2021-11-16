@@ -143,11 +143,8 @@ const Edit = (props:EditProps) => {
 			}).then((result:any) => {
 				editViewModel.set("dirty",false);
 				if (result.updateFeatureResults.length > 0) {
-					//force a loader to make a feedback that the save process is completed
-					// and take off the below two lines
-					
-					// editViewModel.deactivateEdit();
-					// showEditedFeaturesInLayer();
+					editViewModel.deactivateEdit();
+					showEditedFeaturesInLayer();
 					if(onFeatureUpdated){
 						onFeatureUpdated(editableFeaturesInfo[0]);
 					}

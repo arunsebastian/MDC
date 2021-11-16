@@ -126,27 +126,41 @@ const Draw = (props:DrawProps) => {
 					clickHandle.remove();
 					clickHandle = null;
 				}
+				if(view.popup){
+					if(typeof(view.get("originalAutoOpenEnabled")) === 'boolean'){
+						view.popup.autoOpenEnabled = view.get("originalAutoOpenEnabled");
+					}else{
+						view.set("originalAutoOpenEnabled",view.popup.autoOpenEnabled)
+					}
+				}
 			}else{
 				//attach map click
 				if(clickHandle){
 					clickHandle.remove();
 				}
+				if(view.popup){
+					view.popup.autoOpenEnabled = false;
+					if(!view.get("originalAutoOpenEnabled")){
+						view.set("originalAutoOpenEnabled",view.popup.autoOpenEnabled)
+					}
+					view.popup.autoOpenEnabled = false;
+				}
 				clickHandle=view.on("click",(event:any)=>{
-					// view.hitTest(event).then((response:any) =>{
-					// 	let results = response.results;
-					// 	if (results.length > 0) {
-					// 		//TO expand to multi feature editing
-					// 		if(results[0].graphic){
-					// 			const layer = results[0].graphic.layer;
-					// 			let editGraphic = new Graphic({
-					// 				attributes:results[0].graphic.attributes,
-					// 				geometry:results[0].graphic.geometry.clone(),
-					// 				symbol:((layer.renderer) as any).symbol
-					// 			})
-					// 			onFeatureSketched({features:[editGraphic],layer:layer,mode:"edit"});
-					// 		}
-					// 	}
-					// });
+					view.hitTest(event).then((response:any) =>{
+						let results = response.results;
+						if (results.length > 0) {
+							//TO expand to multi feature editing
+							if(results[0].graphic){
+								const layer = results[0].graphic.layer;
+								let editGraphic = new Graphic({
+									attributes:results[0].graphic.attributes,
+									geometry:results[0].graphic.geometry.clone(),
+									symbol:((layer.renderer) as any).symbol
+								})
+								onFeatureSketched({features:[editGraphic],layer:layer,mode:"edit"});
+							}
+						}
+					});
 				});
 			}
 		},[activated]);
@@ -156,8 +170,8 @@ const Draw = (props:DrawProps) => {
 				templatePicker.viewModel.select(selectedTemplateItem);
 			}
 
-		},[templateFromHistory])
-		
+		},[templateFromHistory]);
+
 		return  (
 			<CalcitePanel className="web-editor-draw">
 				<CalcitePanel ref={drawRef}  className="web-editor-draw-template w-100"/>
