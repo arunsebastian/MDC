@@ -4,6 +4,7 @@ import {CalcitePanel,CalciteTabs,CalciteTabNav,CalciteTabTitle,
 } from "@esri/calcite-components-react/dist/components";
 import EditViewModel from "./EditViewModel";
 import FeatureAttributeEditor from "./_components/FeatureAttributeEditor";
+import FeatureVerticesEditor from "./_components/FeatureVerticesEditor";
 import { whenTrueOnce } from "@arcgis/core/core/watchUtils";
 import Graphic from "@arcgis/core/Graphic";
 import "./Edit.scss";
@@ -181,8 +182,11 @@ const Edit = (props:EditProps) => {
 					<CalciteTab className="web-editor-tab" tab="attr" active>
 						<FeatureAttributeEditor layer={getLayerToEdit()} feature={getFeatureToEdit()}/>
 					</CalciteTab>
-					<CalciteTab  className="web-editor-tab" tab="vertices"></CalciteTab>
+					<CalciteTab  className="web-editor-tab" tab="vertices">
+						<FeatureVerticesEditor layer={getLayerToEdit()} feature={getFeatureToEdit()}/>
+					</CalciteTab>
 				</CalciteTabs>
+				
 				<CalciteButton width="auto" slot="footer-actions" onClick={deleteFeature} appearance="outline">Delete</CalciteButton>
 				<CalciteButton width="auto" slot="footer-actions" onClick={cancelEditing} appearance="outline">Cancel</CalciteButton>
 				<CalciteButton width="auto" slot="footer-actions" onClick={saveFeature}>Save</CalciteButton>
