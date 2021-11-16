@@ -45,8 +45,8 @@ export default class EditViewModel extends EventedMixin(Accessor){
 		}));
 		this.handles ={
 			"update":this.sketch.on("update", (info:any)=> {
-				if(info.toolEventInfo?.type.includes("stop") && info.graphic){
-					this.emit("feature-updated",info.graphic);
+				if(info.toolEventInfo?.type.includes("stop")){
+					this.emit("feature-updated",info.graphics[0]);
 				}
 			})
 		};
@@ -81,9 +81,19 @@ export default class EditViewModel extends EventedMixin(Accessor){
 			this.handles[key].remove();
 		}
 	}
-	activateEdit = (feature:__esri.Graphic)=>{
+	activateEdit = (layer:__esri.FeatureLayer,feature:__esri.Graphic)=>{
 		this._clearLayer();
 		this.layer.graphics.add(feature);
+		const geometryString = feature.geometry.type;
+		if(layer){
+			let key = "polygonSymbol"
+			if(geometryString.includes("line")){
+				key = "polylineSymbol";
+			}else if(geometryString.includes("point")){
+				key = "pointSymbol";
+			}
+			this.sketch.set(key,((layer.renderer) as any).symbol)
+		}
 		this.sketch.update(feature);
 	}
 	deactivateEdit= () =>{

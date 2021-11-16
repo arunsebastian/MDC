@@ -76,8 +76,17 @@ export default class DrawViewModel extends EventedMixin(Accessor){
 			this.handles[key].remove();
 		}
 	}
-	activateDraw = (geometryString:any)=>{
+	activateDraw = (layer:__esri.FeatureLayer,geometryString:any)=>{
 		this._clearLayer();
+		if(layer){
+			let key = "polygonSymbol"
+			if(geometryString.includes("line")){
+				key = "polylineSymbol";
+			}else if(geometryString.includes("point")){
+				key = "pointSymbol";
+			}
+			this.sketch.set(key,((layer.renderer) as any).symbol)
+		}
 		this.sketch.create(geometryString);
 	}
 	deactivateDraw = () =>{

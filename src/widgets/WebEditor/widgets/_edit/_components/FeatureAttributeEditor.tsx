@@ -1,4 +1,4 @@
-import {useEffect,useState,useRef} from "react";
+import {useEffect,useRef} from "react";
 import FeatureForm from "@arcgis/core/widgets/FeatureForm";
 import {CalcitePanel} from "@esri/calcite-components-react/dist/components";
 

@@ -1,4 +1,4 @@
-import {useEffect,useRef,useCallback, useState} from "react";
+import {useEffect,useRef} from "react";
 import {CalcitePanel} from "@esri/calcite-components-react/dist/components";
 import FeatureTemplates from "@arcgis/core/widgets/FeatureTemplates";
 import FeatureTemplatesViewModel from "@arcgis/core/widgets/FeatureTemplates/FeatureTemplatesViewModel";
@@ -16,6 +16,7 @@ interface DrawProps{
 	view:__esri.MapView,
 	layers:__esri.FeatureLayer[],
 	activated:boolean,
+	templateFromHistory?:boolean
 	onFeatureSketched?:(info:AddFeatureInfo)=>void
 	onSketchTemplateSelected:(item:__esri.TemplateItem)=>void;
 }
@@ -29,12 +30,13 @@ const templatePicker = new FeatureTemplates({
 });
 let templatePickerSelectionHandle:any
 let clickHandle:any;
+let sketchFeatureHandle:any;
 let selectedTemplateItem:__esri.TemplateItem | null= null;
 
 
 const Draw = (props:DrawProps) => {
 		const drawRef = useRef<HTMLCalciteBlockElement>();
-		const {view,layers,activated,onFeatureSketched,onSketchTemplateSelected} = props;
+		const {view,layers,activated,templateFromHistory,onFeatureSketched,onSketchTemplateSelected} = props;
 		const clearSelectedTemplate = (keepHistory?:boolean) =>{
 			const selectedNode = drawRef.current.querySelector("li.esri-item-list__list-item--selected");
 			if(selectedNode){
@@ -64,7 +66,6 @@ const Draw = (props:DrawProps) => {
 				templatePickerSelectionHandle.remove();
 			}
 			templatePickerSelectionHandle =templatePicker.on("select",(templateInfo:any)=>{
-				console.log(templateInfo.item)
 				const clickedItem = templateInfo.item;
 				if(!clickedItem){
 					clearSelectedTemplate(templateInfo.keepHistory?true:false);
@@ -77,7 +78,7 @@ const Draw = (props:DrawProps) => {
 						selectedTemplateItem.set("selected",true);
 						if(templateInfo?.template?.drawingTool && drawViewModel){
 							styleSelectedTemplate();
-							drawViewModel.activateDraw(templateInfo.template.drawingTool);
+							drawViewModel.activateDraw(selectedTemplateItem.layer,templateInfo.template.drawingTool);
 							onSketchTemplateSelected(selectedTemplateItem)
 						}
 					}else{
@@ -100,7 +101,10 @@ const Draw = (props:DrawProps) => {
 
 		useEffect(()=>{
 			if(drawViewModel){
-				drawViewModel.on("feature-added",(graphic:__esri.Graphic)=>{
+				if(sketchFeatureHandle){
+					sketchFeatureHandle.remove();
+				}
+				sketchFeatureHandle = drawViewModel.on("feature-added",(graphic:__esri.Graphic)=>{
 					const _gra = graphic.clone();
 					templatePicker.emit("select",{
 						item: null,
@@ -121,20 +125,27 @@ const Draw = (props:DrawProps) => {
 					clickHandle.remove();
 					clickHandle = null;
 				}
-				
-				//detach map click
+				if(selectedTemplateItem){
+					templatePicker.viewModel.select(selectedTemplateItem);
+				}
 			}else{
-				console.log("draw deactivated")
 				//attach map click
 				if(clickHandle){
 					clickHandle.remove();
 				}
 				clickHandle=view.on("click",()=>{
-					console.log("Click to edit")
+					//NEXT HERE
 					//query features on click, to edit
 				});
 			}
-		},[activated])
+		},[activated]);
+
+		useEffect(()=>{
+			if(templateFromHistory && selectedTemplateItem){
+				templatePicker.viewModel.select(selectedTemplateItem);
+			}
+
+		},[templateFromHistory])
 		
 		return  (
 			<CalcitePanel className="web-editor-draw">

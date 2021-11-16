@@ -19,6 +19,7 @@ const Editor = (props:EditorProps) => {
 		const [editableLayers,setEditableLayers]=useState<__esri.FeatureLayer[]>([]);
 		const [editableFeaturesInfo,setEditableFeaturesInfo]=useState<EditFeatureInfo[]>([]);
 		const [drawActive,setDrawActive] = useState<boolean>(true);
+		const [templateFromHistory,setTemplateFromHistory]= useState<boolean>(false);
 
 		const activateDrawView = () =>{
 			const drawTab = document.querySelector("calcite-tab-title[tab^='draw']");
@@ -38,11 +39,19 @@ const Editor = (props:EditorProps) => {
 			}
 		}
 
-		const prepareFeaturesForEdit = (info:AddFeatureInfo|EditFeatureInfo)=>{
+		const initialiseEditWorkflow = (info:AddFeatureInfo|EditFeatureInfo)=>{
 			setEditableFeaturesInfo([info]);
 			if(drawActive){
 				activateEditView();
 			}
+		}
+
+		const initialiseDrawWorkflow = () =>{
+			setEditableFeaturesInfo(null);
+			if(!drawActive){
+				activateDrawView();
+			}
+			setTemplateFromHistory(true);
 		}
 
 		const _isLayerLoaded= useCallback(async(layer:__esri.FeatureLayer)=>{
@@ -50,11 +59,12 @@ const Editor = (props:EditorProps) => {
 		},[])
 
 		const _waitForLayerLoad= useCallback(async()=>{
-			const featureLayers = view.map.allLayers.filter((layer:__esri.Layer) => {
+			let featureLayers = view.map.allLayers.filter((layer:__esri.Layer) => {
 				return layer.type === 'feature'; 
 			}).toArray()  as __esri.FeatureLayer[];
 			featureLayers.forEach(async(layer:__esri.Layer)=>{
 				await _isLayerLoaded(layer as __esri.FeatureLayer);
+				layer.set("_defaultDefinitionExpression",(layer as __esri.FeatureLayer).definitionExpression)
 			});
 			return featureLayers;
 		},[_isLayerLoaded,view.map.allLayers]);
@@ -64,20 +74,6 @@ const Editor = (props:EditorProps) => {
 			setEditableFeaturesInfo(null);
 		}
 
-		//Guess the below commented workflow of getting layer infos has to
-		// go to edit widget
-		// const layerInfos = featureLayers.map((fLayer:any)=>{
-		// 	return {layer:fLayer,fieldConfig:_getFieldConfig(fLayer as __esri.FeatureLayer)}
-		// });
-		// const _getFieldConfig=useCallback((layer:__esri.FeatureLayer)=>{
-		// 	if(layer?.popupTemplate){
-		// 		const popupTemplate = layer.popupTemplate;
-		// 		return popupTemplate.fieldInfos.map((info:__esri.FieldInfo)=>{
-		// 			return {name:info.fieldName,label:info.label}
-		// 		});
-		// 	}
-		// 	return null;
-		// },[])
 
 		useEffect(()=>{
 			whenTrueOnce(view,"ready",async()=>{
@@ -102,10 +98,10 @@ const Editor = (props:EditorProps) => {
 						<CalciteTabTitle onClick={()=>setDrawActive(false)} className= "web-editor-title-l1"   tab="edit">Edit Feature</CalciteTabTitle>
 					</CalciteTabNav>
 					<CalciteTab className="web-editor-tab" tab="draw">
-						<Draw activated={drawActive} view={view} onSketchTemplateSelected={handleSketchTemplateSelection} onFeatureSketched={prepareFeaturesForEdit} layers={editableLayers}></Draw>
+						<Draw activated={drawActive} view={view} templateFromHistory={templateFromHistory} onSketchTemplateSelected={handleSketchTemplateSelection} onFeatureSketched={initialiseEditWorkflow} layers={editableLayers}></Draw>
 					</CalciteTab>
 					<CalciteTab  className="web-editor-tab" tab="edit">
-						<Edit activated={!drawActive} view={view} editableFeaturesInfo ={editableFeaturesInfo} onFeatureCreated={prepareFeaturesForEdit}></Edit>
+						<Edit activated={!drawActive} view={view} editableFeaturesInfo ={editableFeaturesInfo} onFeatureCreated={initialiseEditWorkflow} onCancelEditing={initialiseDrawWorkflow} ></Edit>
 					</CalciteTab>
 				</CalciteTabs>
 			</CalciteBlock>
@@ -117,3 +113,20 @@ Editor.defaultProps ={
 } as EditorProps;
 
 export default Editor;
+
+
+
+		//Guess the below commented workflow of getting layer infos has to
+		// go to edit widget
+		// const layerInfos = featureLayers.map((fLayer:any)=>{
+		// 	return {layer:fLayer,fieldConfig:_getFieldConfig(fLayer as __esri.FeatureLayer)}
+		// });
+		// const _getFieldConfig=useCallback((layer:__esri.FeatureLayer)=>{
+		// 	if(layer?.popupTemplate){
+		// 		const popupTemplate = layer.popupTemplate;
+		// 		return popupTemplate.fieldInfos.map((info:__esri.FieldInfo)=>{
+		// 			return {name:info.fieldName,label:info.label}
+		// 		});
+		// 	}
+		// 	return null;
+		// },[])
