@@ -1,4 +1,4 @@
-import {useEffect,useState} from "react";
+import {useEffect,useState,useLayoutEffect} from "react";
 import {CalcitePanel,CalciteTabs,CalciteTabNav,CalciteTabTitle,
 	CalciteTab,CalciteButton
 } from "@esri/calcite-components-react/dist/components";
@@ -20,7 +20,7 @@ interface EditProps{
 	view:__esri.MapView,
 	editableFeaturesInfo:EditFeatureInfo[],
 	onFeatureCreated:(info:EditFeatureInfo)=>void;
-	onFeatureUpdated?:(info:EditFeatureInfo)=>void;
+	onFeatureUpdated:(info:EditFeatureInfo)=>void;
 	onCancelEditing?:()=>void;
 	activated:boolean
 }
@@ -31,34 +31,12 @@ const captureMode="add";
 const editViewModel = new EditViewModel({});
 let featureUpdateHandle:any = null;
 const Edit = (props:EditProps) => {
+	const [editedFeature,setEditedFeature] = useState<__esri.Graphic|null>(null);
+	const[ attrActive,setAttrActive] = useState<boolean>(true);
 	const {view,editableFeaturesInfo,activated,
 		onCancelEditing,
 		onFeatureCreated,
 		onFeatureUpdated} = props;
-		
-	useEffect(()=>{
-		if(view){
-			editViewModel.update(view);
-		}
-	},[view]);
-
-	useEffect(()=>{
-		if(activated && editableFeaturesInfo instanceof Array && editableFeaturesInfo.length>0){
-			editViewModel.activateEdit(editableFeaturesInfo[0].layer,editableFeaturesInfo[0].features[0]);
-			hideEditedGraphicsInLayer()
-		}
-	},[activated,editableFeaturesInfo]);
-
-	useEffect(()=>{
-		if(editViewModel){
-			if(featureUpdateHandle){
-				featureUpdateHandle.remove();
-			}
-			featureUpdateHandle = editViewModel.on("feature-updated",(graphic:__esri.Graphic)=>{
-				editViewModel.set("dirty",true);
-			});
-		}
-	},[editViewModel,editableFeaturesInfo]);
 
 	const isFeaturesReadyToEdit = () =>{
 		return editableFeaturesInfo && editableFeaturesInfo.some((item:EditFeatureInfo) => item.features.length > 0);
@@ -78,6 +56,25 @@ const Edit = (props:EditProps) => {
 		await whenTrueOnce(layer,"loaded");
 		return layer.loaded
 	}
+	
+	const activateAttributeEditingView = () =>{
+		const attrTab = document.querySelector("calcite-tab-title[tab^='attr']");
+		if(attrTab){
+			const ev = new KeyboardEvent('keydown', { key: 'Enter',keyCode: 13});
+			attrTab?.dispatchEvent(ev);
+			setAttrActive(true);
+		}
+	}
+
+	const activateVertexEditingView = () =>{
+		const verticesTab = document.querySelector("calcite-tab-title[tab^='vertices']");
+		if(verticesTab){
+			const ev = new KeyboardEvent('keydown', { key: 'Enter',keyCode: 13});
+			verticesTab?.dispatchEvent(ev);
+			setAttrActive(false);
+		}
+	}
+
 
 	const cancelEditing = () =>{
 		//check for dirty features
@@ -88,6 +85,7 @@ const Edit = (props:EditProps) => {
 			if(onCancelEditing){
 				onCancelEditing();
 			}
+			setEditedFeature(null);
 		}
 	}
 
@@ -105,7 +103,6 @@ const Edit = (props:EditProps) => {
 
 	const showEditedFeaturesInLayer = () =>{
 		editableFeaturesInfo.forEach((info:EditFeatureInfo)=>{
-			
 			refreshLayer(info.layer)
 		});
 	}
@@ -147,6 +144,8 @@ const Edit = (props:EditProps) => {
 				if (result.updateFeatureResults.length > 0) {
 					editViewModel.deactivateEdit();
 					showEditedFeaturesInLayer();
+					setEditedFeature(null);
+					activateAttributeEditingView();
 					if(onFeatureUpdated){
 						onFeatureUpdated(editableFeaturesInfo[0]);
 					}
@@ -169,20 +168,61 @@ const Edit = (props:EditProps) => {
 			});
 		}
 	}
+
+	const handleVertexEdits=(feature:__esri.Graphic) =>{
+		editViewModel.set("dirty",true);
+		editableFeaturesInfo[0].features[0] = feature;
+		editViewModel.activateEdit(editableFeaturesInfo[0].layer,feature);
+		setEditedFeature(feature)
+	}
+
+	useEffect(()=>{
+		if(view){
+			editViewModel.update(view);
+		}
+	},[view]);
+
+	useEffect(()=>{
+		if(activated && editableFeaturesInfo instanceof Array && editableFeaturesInfo.length>0){
+			setEditedFeature(editableFeaturesInfo[0].features[0]);
+			editViewModel.activateEdit(editableFeaturesInfo[0].layer,editableFeaturesInfo[0].features[0]);
+			hideEditedGraphicsInLayer();
+		}
+	},[activated,editableFeaturesInfo]);
+
+	useEffect(()=>{
+		if(editViewModel){
+			if(featureUpdateHandle){
+				featureUpdateHandle.remove();
+			}
+			featureUpdateHandle = editViewModel.on("feature-updated",(graphic:__esri.Graphic)=>{
+				editViewModel.set("dirty",true);
+				setEditedFeature(graphic.clone());
+				//to prevent the auto switching
+				if(!attrActive){
+					activateVertexEditingView()
+				}
+			});
+		}
+	},[editViewModel,editableFeaturesInfo]);
+
+	useLayoutEffect(()=>{
+		activateAttributeEditingView();
+	},[]);
 	
 	return  (
 		<CalcitePanel className="web-editor-edit">
 			<CalcitePanel style={{display:isFeaturesReadyToEdit()?"":"none"}} className="web-editor-edit-view w-100">
 				<CalciteTabs bordered={false} className="web-editor-view-tabs">
 					<CalciteTabNav slot="tab-nav">
-						<CalciteTabTitle className= "web-editor-title-l1" tab="attr" active>Attributes</CalciteTabTitle>
-						<CalciteTabTitle className= "web-editor-title-l1" tab="vertices">Vertices</CalciteTabTitle>
+						<CalciteTabTitle  onClick={()=>setAttrActive(true)} className= "web-editor-title-l1" tab="attr">Attributes</CalciteTabTitle>
+						<CalciteTabTitle  onClick={()=>setAttrActive(false)} className= "web-editor-title-l1" tab="vertices">Vertices</CalciteTabTitle>
 					</CalciteTabNav>
-					<CalciteTab className="web-editor-tab" tab="attr" active>
+					<CalciteTab className="web-editor-tab" tab="attr">
 						<FeatureAttributeEditor layer={getLayerToEdit()} feature={getFeatureToEdit()}/>
 					</CalciteTab>
 					<CalciteTab  className="web-editor-tab" tab="vertices">
-						<FeatureVerticesEditor layer={getLayerToEdit()} feature={getFeatureToEdit()}/>
+						<FeatureVerticesEditor onVertexEdited={handleVertexEdits}feature={editedFeature}/>
 					</CalciteTab>
 				</CalciteTabs>
 			</CalcitePanel>

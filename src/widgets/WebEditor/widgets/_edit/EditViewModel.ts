@@ -47,6 +47,8 @@ export default class EditViewModel extends EventedMixin(Accessor){
 			"update":this.sketch.on("update", (info:any)=> {
 				if(info.toolEventInfo?.type.includes("stop")){
 					this.emit("feature-updated",info.graphics[0]);
+				}else if(info.toolEventInfo?.type === "vertex-remove"){
+					this.emit("feature-updated",info.graphics[0]);
 				}
 			})
 		};
