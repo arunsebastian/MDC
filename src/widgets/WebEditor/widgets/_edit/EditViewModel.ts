@@ -7,7 +7,7 @@ import { subclass} from "@arcgis/core/core/accessorSupport/decorators";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
 interface EditViewModelProperties{
-	view:__esri.MapView;
+	view?:__esri.MapView;
 }
 
 

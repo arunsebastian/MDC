@@ -28,7 +28,7 @@ interface EditProps{
 const editMode="edit";
 const captureMode="add";
 
-const editViewModel = new EditViewModel({view:null});
+const editViewModel = new EditViewModel({});
 let featureUpdateHandle:any = null;
 const Edit = (props:EditProps) => {
 	const {view,editableFeaturesInfo,activated,
@@ -96,7 +96,8 @@ const Edit = (props:EditProps) => {
 			editableFeaturesInfo.forEach((info:EditFeatureInfo)=>{
 				if(info.mode === editMode){
 					const objectId = info.features[0].attributes[info.layer.objectIdField];
-					info.layer.definitionExpression= `${info.layer.objectIdField} <> ${objectId}`;
+					const defExpression = info.layer.definitionExpression?`${info.layer.definitionExpression} AND ${info.layer.objectIdField} <> ${objectId}`: `${info.layer.objectIdField} <> ${objectId}`;
+					info.layer.definitionExpression= defExpression;
 				}
 			});
 		}
@@ -186,11 +187,11 @@ const Edit = (props:EditProps) => {
 						<FeatureVerticesEditor layer={getLayerToEdit()} feature={getFeatureToEdit()}/>
 					</CalciteTab>
 				</CalciteTabs>
-				
-				<CalciteButton width="auto" slot="footer-actions" onClick={deleteFeature} appearance="outline">Delete</CalciteButton>
-				<CalciteButton width="auto" slot="footer-actions" onClick={cancelEditing} appearance="outline">Cancel</CalciteButton>
-				<CalciteButton width="auto" slot="footer-actions" onClick={saveFeature}>Save</CalciteButton>
-				
+			</CalcitePanel>
+			<CalcitePanel style={{display:isFeaturesReadyToEdit()?"":"none"}} >
+				<CalciteButton width="auto" slot="footer" onClick={deleteFeature} appearance="outline">Delete</CalciteButton>
+				<CalciteButton width="auto" slot="footer" onClick={cancelEditing} appearance="outline">Cancel</CalciteButton>
+				<CalciteButton width="auto" slot="footer" onClick={saveFeature}>Save</CalciteButton>
 			</CalcitePanel>
 			<CalcitePanel style={{display:isFeaturesReadyToEdit()?"none":""}} className="web-editor-inactive w-100">
 					Click on a feature in map to edit.

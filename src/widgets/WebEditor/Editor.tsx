@@ -1,4 +1,4 @@
-import {useEffect,useCallback,useState, useLayoutEffect } from "react";
+import {useEffect,useState, useLayoutEffect } from "react";
 import { 
 	CalciteBlock,
 	CalciteTabs, CalciteTab, 
@@ -7,6 +7,7 @@ import {
 import {whenTrueOnce} from "@arcgis/core/core/watchUtils";
 import Draw ,{AddFeatureInfo} from "./widgets/_draw/Draw";
 import Edit,{EditFeatureInfo} from "./widgets/_edit/Edit";
+import { waitForFeatureLayersLoad } from "../../utils/MapUtils";
 
 import "./Editor.scss";
 
@@ -47,41 +48,26 @@ const Editor = (props:EditorProps) => {
 		}
 
 		const initializeDrawWorkflow = () =>{
-			setEditableFeaturesInfo(null);
+			setEditableFeaturesInfo([]);
 			if(!drawActive){
 				activateDrawView();
 			}
 			setTemplateFromHistory(true);
 		}
 
-		const _isLayerLoaded= useCallback(async(layer:__esri.FeatureLayer)=>{
-			await whenTrueOnce(layer,"loaded");
-		},[])
-
-		const _waitForLayerLoad= useCallback(async()=>{
-			let featureLayers = view.map.allLayers.filter((layer:__esri.Layer) => {
-				return layer.type === 'feature'; 
-			}).toArray()  as __esri.FeatureLayer[];
-			featureLayers.forEach(async(layer:__esri.Layer)=>{
-				await _isLayerLoaded(layer as __esri.FeatureLayer);
-				layer.set("outFields",['*']);
-				layer.set("_defaultDefinitionExpression",(layer as __esri.FeatureLayer).definitionExpression)
-			});
-			return featureLayers;
-		},[_isLayerLoaded,view.map.allLayers]);
-
 		const handleSketchTemplateSelection = (item:__esri.TemplateItem) =>{
 			//clear edits
-			setEditableFeaturesInfo(null);
+			setEditableFeaturesInfo([]);
 		}
 
 
 		useEffect(()=>{
 			whenTrueOnce(view,"ready",async()=>{
-				const layers:any = await _waitForLayerLoad();
-				setEditableLayers(layers);
+				waitForFeatureLayersLoad(view).then((layers:__esri.FeatureLayer[])=>{
+					setEditableLayers(layers);
+				});
 			});
-		},[props,view,_waitForLayerLoad]);
+		},[props,view]);
 
 		
 
@@ -114,20 +100,3 @@ Editor.defaultProps ={
 } as EditorProps;
 
 export default Editor;
-
-
-
-		//Guess the below commented workflow of getting layer infos has to
-		// go to edit widget
-		// const layerInfos = featureLayers.map((fLayer:any)=>{
-		// 	return {layer:fLayer,fieldConfig:_getFieldConfig(fLayer as __esri.FeatureLayer)}
-		// });
-		// const _getFieldConfig=useCallback((layer:__esri.FeatureLayer)=>{
-		// 	if(layer?.popupTemplate){
-		// 		const popupTemplate = layer.popupTemplate;
-		// 		return popupTemplate.fieldInfos.map((info:__esri.FieldInfo)=>{
-		// 			return {name:info.fieldName,label:info.label}
-		// 		});
-		// 	}
-		// 	return null;
-		// },[])

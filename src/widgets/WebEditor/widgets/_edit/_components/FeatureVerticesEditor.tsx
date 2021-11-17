@@ -13,13 +13,14 @@ const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
 	const [vertices,setVertices] = useState<[[]]>([[]]);
 	
 	useEffect(()=>{
-		if(feature && feature.geometry.type === 'polygon'){
+		if(feature && feature.geometry.type.includes('polygon')){
 			const rings =feature.geometry.toJSON()["rings"][0];
 			setVertices((_vertices)=>{
 				if(_vertices.length !== rings){
 					return rings;
 				}
 			});
+			
 			//I AM HERE:: ARREST THE INFINITE RENDER
 		}
 	},[layer,feature, vertices]);

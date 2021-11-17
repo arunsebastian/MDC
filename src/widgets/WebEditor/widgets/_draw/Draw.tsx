@@ -139,6 +139,7 @@ const Draw = (props:DrawProps) => {
 					clickHandle.remove();
 				}
 				if(view.popup){
+					view.popup.close();
 					view.popup.autoOpenEnabled = false;
 					if(!view.get("originalAutoOpenEnabled")){
 						view.set("originalAutoOpenEnabled",view.popup.autoOpenEnabled)
