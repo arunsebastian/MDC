@@ -118,6 +118,34 @@ function MapComponent() {
 		});
 	}
 
+	const _getZoomToLayer = (type:string) =>{
+		let zoomToLayer= null;
+		if(appConfig.webmapConfig.urlModuleNameKey && searchString){
+			const urlParams = new URLSearchParams(searchString);
+			const moduleName = urlParams.get(appConfig.webmapConfig.urlModuleNameKey);
+			if(moduleName && appConfig.webmapConfig[moduleName].zoomToLayer){
+				zoomToLayer = view.map.allLayers.find((layer:__esri.Layer)=> {
+					return layer.type === 'feature' 
+						  && layer.title.includes(appConfig.webmapConfig[moduleName].zoomToLayer)
+						  && (layer as any).geometryType.includes(type)
+				});
+			}
+		}
+		return zoomToLayer;
+	}
+
+	const zoomToLayer = () =>{
+		const layer =  _getZoomToLayer("polygon") || _getZoomToLayer("line") || _getZoomToLayer("point")
+		if(layer){
+			layer.when(() => {
+				return layer.queryExtent();
+			})
+			.then((response:any) => {
+				view.goTo(response.extent);
+			});
+		}
+	}
+
 	//component did update
 	useEffect(() => {
 		if (mapDiv.current) {
@@ -151,6 +179,7 @@ function MapComponent() {
 				waitForFeatureLayersLoad(view).then(()=>{
 					setOutFields();
 					applyDefinitionQueries();
+					zoomToLayer();
 					setReady(true);
 				});
 			});

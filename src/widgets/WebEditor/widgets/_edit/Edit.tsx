@@ -160,14 +160,12 @@ const Edit = (props:EditProps) => {
 		const layer =  editableFeaturesInfo[0].layer;
 		editViewModel.deactivateEdit();
 		if(mode === captureMode){
-			editViewModel.deactivateEdit();
-			onCancelEditing();
+			cancelEditing();
 		}else if(mode === editMode){
 			layer.applyEdits({
 				deleteFeatures :editableFeaturesInfo[0].features
 			}).then((result:any) => {
-				editViewModel.set("dirty",false);
-				onCancelEditing();
+				cancelEditing();
 			});
 		}
 	}

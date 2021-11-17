@@ -60,10 +60,17 @@ const Editor = (props:EditorProps) => {
 			setEditableFeaturesInfo([]);
 		}
 
+		const prepareForEditing = (layers:__esri.FeatureLayer[]) =>{
+			layers.forEach((layer:__esri.FeatureLayer)=>{
+				layer.set("_defaultDefinitionExpression",(layer as __esri.FeatureLayer).definitionExpression);
+			});
+		}
+
 
 		useEffect(()=>{
 			whenTrueOnce(view,"ready",async()=>{
 				waitForFeatureLayersLoad(view).then((layers:__esri.FeatureLayer[])=>{
+					prepareForEditing(layers);
 					setEditableLayers(layers);
 				});
 			});

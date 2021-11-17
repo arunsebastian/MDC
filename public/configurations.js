@@ -17,6 +17,7 @@ var EXTERNAL_CONFIG = {
 		"queryField":"ModuleKey",
 		"rcmForeshores":{
 			"webmapId":"61944ab229164dc3b825779bda1257e9",
+			"zoomToLayer":"Foreshores"
 		}
 	}
 }
