@@ -4,8 +4,8 @@ import XYEditor from "./XYEditor"
 import Graphic from "@arcgis/core/Graphic";
 import Polygon from "@arcgis/core/geometry/Polygon";
 import Polyline from "@arcgis/core/geometry/Polyline";
-import Point from "@arcgis/core/geometry/Point";
 import * as esriLang from "@arcgis/core/core/lang";
+import {topologicalSort} from "../../../../../utils/MapUtils";
 
 
 interface FeatureVerticesEditorProps{
@@ -15,7 +15,7 @@ interface FeatureVerticesEditorProps{
 
 const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
 	const {feature,onVertexEdited} = props;
-	const [vertices,setVertices] = useState<[]>([]);
+	const [vertices,setVertices] = useState<number[][]>([]);
 
 	const getVertices = (feature:__esri.Graphic) =>{
 		let vertices = [];
@@ -48,19 +48,19 @@ const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
 
 	const isDeleteAllowed = () =>{
 		if(feature && feature.geometry.type.includes("polygon")){
-			return vertices.length > 3;
+			return vertices.length > 3 && vertices.every((vertex:number[])=>{ return  vertex[0] !==0 && typeof(vertex[0]) ==='number'   &&  vertex[1] !==0 && typeof(vertex[1]) ==='number' });
 		}else if(feature && feature.geometry.type.includes("line")){
-			return vertices.length > 2;
+			return vertices.length > 2 && vertices.every((vertex:number[])=>{ return  vertex[0] !==0 && typeof(vertex[0]) ==='number'   &&  vertex[1] !==0 && typeof(vertex[1]) ==='number' });
 		}else{
 			return false;
 		}
 	}
 
 	const handleVertexRemove = (index:number)=>{
-		const _vertices = esriLang.clone(vertices);
+		let _vertices = esriLang.clone(vertices);
 		if(feature && feature.geometry.type.includes("polygon")){
 			_vertices.splice(index,1);
-			_vertices.push(vertices[0]);
+			_vertices.push(_vertices[0]);
 			const polygon = new Polygon({
 				rings: [_vertices],
 				spatialReference: { wkid: feature.geometry.spatialReference.wkid }
