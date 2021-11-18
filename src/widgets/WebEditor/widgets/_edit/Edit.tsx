@@ -225,7 +225,7 @@ const Edit = (props:EditProps) => {
 		<CalcitePanel className="web-editor-edit">
 			<CalcitePanel className="web-editor-edit-view w-100" style={{display:isFeaturesReadyToEdit()?"":"none"}}>
 				{/* temporarily disabling the tab system for attr/vertex editor */}
-				<CalciteTabs bordered={false} className="web-editor-view-tabs">
+				{/* <CalciteTabs bordered={false} className="web-editor-view-tabs">
 					<CalciteTabNav slot="tab-nav">
 						<CalciteTabTitle  onClick={()=>setAttrActive(true)} className= "web-editor-title-l1" tab="attr">Attributes</CalciteTabTitle>
 						<CalciteTabTitle  onClick={()=>setAttrActive(false)} className= "web-editor-title-l1" tab="vertices">Vertices</CalciteTabTitle>
@@ -236,8 +236,8 @@ const Edit = (props:EditProps) => {
 					<CalciteTab  className="web-editor-tab" tab="vertices">
 						<FeatureVerticesEditor onVertexEdited={handleVertexEdits} feature={editedFeature}/>
 					</CalciteTab>
-				</CalciteTabs>
-				{/* <FeatureVerticesEditor onVertexEdited={handleVertexEdits} feature={editedFeature}/> */}
+				</CalciteTabs> */}
+				<FeatureVerticesEditor onVertexEdited={handleVertexEdits} feature={editedFeature}/>
 			</CalcitePanel>
 			<CalcitePanel className="web-editor-edit-footer" ref={footerRef} style={{display:isFeaturesReadyToEdit()?"":"none"}} >
 				<CalciteButton width="auto" slot="footer" onClick={deleteFeature} appearance="outline">Delete</CalciteButton>
