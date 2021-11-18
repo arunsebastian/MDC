@@ -1,6 +1,7 @@
 import {useEffect,useRef} from "react";
 import FeatureForm from "@arcgis/core/widgets/FeatureForm";
 import {CalcitePanel} from "@esri/calcite-components-react/dist/components";
+import "./FeatureAttributeEditor.scss"
 
 interface FeatureAttributeEditorProps{
 	layer:__esri.FeatureLayer|null,

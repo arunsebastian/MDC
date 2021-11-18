@@ -6,6 +6,7 @@ import Polygon from "@arcgis/core/geometry/Polygon";
 import Polyline from "@arcgis/core/geometry/Polyline";
 import * as esriLang from "@arcgis/core/core/lang";
 import {topologicalSort} from "../../../../../utils/MapUtils";
+import "./FeatureVerticesEditor.scss";
 
 
 interface FeatureVerticesEditorProps{

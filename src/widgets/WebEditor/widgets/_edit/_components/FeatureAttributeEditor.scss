@@ -1,0 +1,10 @@
+.web-editor-attr-editor{
+	&.esri-feature-form{
+		padding:0px !important;
+		.esri-feature-form__form{
+			padding:10px;
+		}
+	}
+	max-height:300px;
+	overflow-y: auto;
+}
