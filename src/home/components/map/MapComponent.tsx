@@ -1,6 +1,5 @@
 import React,{useState, useRef, useEffect, useCallback } from "react";
 import ReactDOM from "react-dom";
-import { useLocation } from 'react-router-dom';
 import CoordinateSearch from "../../../widgets/CoordinateSearch/CoordinateSearch";
 import EsriEditor from "../../../widgets/EsriEditor/EsriEditor";
 import WebEditor from "../../../widgets/WebEditor/Editor";
@@ -19,7 +18,7 @@ function MapComponent() {
 	const mapDiv = useRef(null);
 	const [view, setView] = useState<__esri.MapView>();
 	const [ready, setReady] = useState<boolean>(false);
-	const searchString = useLocation().search;
+	const searchString = window.location.search;
 	
 	const isWebmapConfigured = () => {
 		//check if webmap
