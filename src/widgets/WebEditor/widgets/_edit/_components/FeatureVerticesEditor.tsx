@@ -4,6 +4,7 @@ import XYEditor from "./XYEditor"
 import Graphic from "@arcgis/core/Graphic";
 import Polygon from "@arcgis/core/geometry/Polygon";
 import Polyline from "@arcgis/core/geometry/Polyline";
+import Point from "@arcgis/core/geometry/Point";
 import * as esriLang from "@arcgis/core/core/lang";
 import {topologicalSort} from "../../../../../utils/MapUtils";
 import "./FeatureVerticesEditor.scss";
@@ -11,11 +12,12 @@ import "./FeatureVerticesEditor.scss";
 
 interface FeatureVerticesEditorProps{
 	feature:__esri.Graphic,
+	view:__esri.MapView,
 	onVertexEdited:(feature:__esri.Graphic) => void;
 }
 
 const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
-	const {feature,onVertexEdited} = props;
+	const {feature,view,onVertexEdited} = props;
 	const [vertices,setVertices] = useState<number[][]>([]);
 	const [editedVertexIndex,setEditedVertexIndex]=useState<number>(-1);
 	const modelRef = useRef<HTMLCalciteModalElement>(null);
@@ -49,7 +51,7 @@ const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
 		}
 	}
 
-	const handleVertexRemove = ()=>{
+	const proceedVertexRemove = ()=>{
 		const index = editedVertexIndex;
 		setEditedVertexIndex(-1);
 		if(modelRef.current){
@@ -82,10 +84,63 @@ const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
 		
 	}
 
+	const proceedWithVertexUpdate =(index:number,xy:number[]) =>{
+		if(index > -1){
+			let _vertices = esriLang.clone(vertices);
+			if(feature && feature.geometry.type.includes("polygon")){
+				_vertices.splice(index, 1, xy);
+				_vertices.push(_vertices[0]);
+				const polygon = new Polygon({
+					rings: [_vertices],
+					spatialReference: { wkid: feature.geometry.spatialReference.wkid }
+				});
+				if(onVertexEdited){
+					onVertexEdited(new Graphic({attributes:feature.attributes,geometry:polygon,symbol:feature.symbol}));
+				}
+				
+			}else if(feature && feature.geometry.type.includes("line")){
+				_vertices.splice(index, 1, xy);
+				const polyline = new Polyline({
+					paths: [_vertices],
+					spatialReference: { wkid: feature.geometry.spatialReference.wkid }
+				});
+				if(onVertexEdited){
+					onVertexEdited(new Graphic({attributes:feature.attributes,geometry:polyline,symbol:feature.symbol}));
+				}
+			}else if(feature && feature.geometry.type.includes("point")){
+				_vertices.splice(index, 1, xy);
+				const point = new Point({
+					x:xy[0],
+					y:xy[1],
+					spatialReference: { wkid: feature.geometry.spatialReference.wkid }
+				});
+				if(onVertexEdited){
+					onVertexEdited(new Graphic({attributes:feature.attributes,geometry:point,symbol:feature.symbol}));
+				}
+			}
+		}
+	}
+
+	const validateVertexUpdate =(index:number,xy:number[]) =>{
+		if (view.map.basemap.baseLayers.length) {
+			const updatedPt = new Point({x:xy[0],y:xy[1],spatialReference:{
+				wkid:feature.geometry.spatialReference.wkid
+			}});
+			const validateExtent:__esri.Extent = view.map.basemap.baseLayers.getItemAt(0).fullExtent;
+			if(validateExtent && validateExtent.contains(updatedPt)){
+				proceedWithVertexUpdate(index,xy)
+				setEditedVertexIndex(index);
+			}
+		}
+	}
+
 	const getXYEditors = () =>{
 		return vertices.map((xySet:any,index:number)=>{
 			return <XYEditor 
-					deleteAllowed={isDeleteAllowed()} x={xySet[0]}  y={xySet[1]} 
+					x={xySet[0]}  
+					y={xySet[1]}
+					onVertexEdits={validateVertexUpdate}
+					deleteAllowed={isDeleteAllowed()}  
 					onDeleteClicked={confirmDeleteOfVertex} index={index} key={index}/>
 		})
 	}
@@ -129,7 +184,7 @@ const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
 					Are you sure you want to delete the vertex?
 				</div>
 				<CalciteButton slot="secondary" width="full" onClick={continueVertexEditing} appearance="outline">No</CalciteButton>
-				<CalciteButton slot="primary" width="full" onClick={handleVertexRemove}>Yes</CalciteButton>
+				<CalciteButton slot="primary" width="full" onClick={proceedVertexRemove}>Yes</CalciteButton>
 			</CalciteModal>
 		</CalcitePanel>
 	)

@@ -237,7 +237,7 @@ const Edit = (props:EditProps) => {
 						<FeatureVerticesEditor onVertexEdited={handleVertexEdits} feature={editedFeature}/>
 					</CalciteTab>
 				</CalciteTabs> */}
-				<FeatureVerticesEditor onVertexEdited={handleVertexEdits} feature={editedFeature}/>
+				<FeatureVerticesEditor view={view} onVertexEdited={handleVertexEdits} feature={editedFeature}/>
 			</CalcitePanel>
 			<CalcitePanel className="web-editor-edit-footer" ref={footerRef} style={{display:isFeaturesReadyToEdit()?"":"none"}} >
 				<CalciteButton width="auto" slot="footer" onClick={deleteFeature} appearance="outline">Delete</CalciteButton>
