@@ -46,7 +46,7 @@ const Draw = (props:DrawProps) => {
 			if(!keepHistory){
 				selectedTemplateItem = null;
 				templatePicker.viewModel.set("selectedTemplateItem",null);
-			}else{
+			}else if(selectedTemplateItem){
 				selectedTemplateItem.set("selected",false);
 			}
 			(document.activeElement as any).blur();
@@ -163,6 +163,8 @@ const Draw = (props:DrawProps) => {
 						}
 					});
 				});
+				clearSelectedTemplate(true);
+				
 			}
 		},[activated]);
 

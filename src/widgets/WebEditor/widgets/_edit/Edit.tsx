@@ -1,6 +1,6 @@
 import {useEffect,useState,useRef,useLayoutEffect} from "react";
 import {CalcitePanel,CalciteTabs,CalciteTabNav,CalciteTabTitle,
-	CalciteTab,CalciteButton
+	CalciteTab,CalciteButton,CalciteModal
 } from "@esri/calcite-components-react/dist/components";
 import EditViewModel from "./EditViewModel";
 import FeatureAttributeEditor from "./_components/FeatureAttributeEditor";
@@ -19,8 +19,8 @@ export interface EditFeatureInfo{
 interface EditProps{
 	view:__esri.MapView,
 	editableFeaturesInfo:EditFeatureInfo[],
-	onFeatureCreated:(info:EditFeatureInfo)=>void;
-	onFeatureUpdated:(info:EditFeatureInfo)=>void;
+	onFeatureCreated?:(info:EditFeatureInfo)=>void;
+	onFeatureUpdated?:(info:EditFeatureInfo)=>void;
 	onCancelEditing?:()=>void;
 	activated:boolean
 }
@@ -31,6 +31,7 @@ const captureMode="add";
 const editViewModel = new EditViewModel({});
 let featureUpdateHandle:any = null;
 const Edit = (props:EditProps) => {
+	const deleteFeatureRef = useRef<HTMLCalciteModalElement>(null);
 	const footerRef = useRef<HTMLCalcitePanelElement>(null);
 	const [editedFeature,setEditedFeature] = useState<__esri.Graphic|null>(null);
 	const[ attrActive,setAttrActive] = useState<boolean>(true);
@@ -145,13 +146,34 @@ const Edit = (props:EditProps) => {
 				if (result.updateFeatureResults.length > 0) {
 					editViewModel.deactivateEdit();
 					showEditedFeaturesInLayer();
-					setEditedFeature(null);
 					activateAttributeEditingView();
 					if(onFeatureUpdated){
 						onFeatureUpdated(editableFeaturesInfo[0]);
 					}
+					//-> for keeping editing commenting out the following
+					//setEditedFeature(null);
+					//cancelEditing()
 				}
 			});
+		}
+	}
+
+	const confirmFeatureDelete = () =>{
+		if(deleteFeatureRef.current){
+			deleteFeatureRef.current.setAttribute("active","true");
+		}
+	}
+
+	const proceedDelete =() =>{
+		if(deleteFeatureRef.current){
+			deleteFeatureRef.current.removeAttribute("active");
+		}
+		deleteFeature();
+	}
+
+	const cancelDelete =()=>{
+		if(deleteFeatureRef.current){
+			deleteFeatureRef.current.removeAttribute("active");
 		}
 	}
 
@@ -240,13 +262,21 @@ const Edit = (props:EditProps) => {
 				<FeatureVerticesEditor view={view} onVertexEdited={handleVertexEdits} feature={editedFeature}/>
 			</CalcitePanel>
 			<CalcitePanel className="web-editor-edit-footer" ref={footerRef} style={{display:isFeaturesReadyToEdit()?"":"none"}} >
-				<CalciteButton width="auto" slot="footer" onClick={deleteFeature} appearance="outline">Delete</CalciteButton>
+				<CalciteButton width="auto" slot="footer" onClick={confirmFeatureDelete} appearance="outline">Delete</CalciteButton>
 				<CalciteButton width="auto" slot="footer" onClick={cancelEditing} appearance="outline">Cancel</CalciteButton>
 				<CalciteButton width="auto" slot="footer" onClick={saveFeature}>Save</CalciteButton>
 			</CalcitePanel>
 			<CalcitePanel style={{display:isFeaturesReadyToEdit()?"none":""}} className="web-editor-inactive w-100">
 					Click on a feature in map to edit.
 			</CalcitePanel>
+			<CalciteModal ref={deleteFeatureRef} scale="s" width="s">
+				<div slot="header" >Confirm</div>
+				<div slot="content">
+					Are you sure you want to delete the feature?
+				</div>
+				<CalciteButton slot="secondary" width="full" onClick={cancelDelete} appearance="outline">No</CalciteButton>
+				<CalciteButton slot="primary" width="full" onClick={proceedDelete}>Yes</CalciteButton>
+			</CalciteModal>
 		</CalcitePanel>
 	)
 }
