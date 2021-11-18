@@ -103,16 +103,6 @@ const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
 		}
 	}
 
-	// const applyCustomStyleToShadow =() =>{
-	// 	return;
-	// 	if(panelRef.current){
-	// 		let style = document.createElement( 'style' )
-	// 		style.innerHTML = 'section.content-container { padding-right:5px; }' as string;
-	// 		((panelRef.current)as any).shadowRoot.appendChild(style);
-	// 	}
-		
-	// }
-
 
 	useEffect(()=>{
 		if(feature){

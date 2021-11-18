@@ -45,4 +45,14 @@
             }
         }
     }
+    .web-editor-edit-footer::part(edit-footer){
+        justify-content: flex-end;
+        padding-right:0px;
+        
+    }
+    .web-editor-edit-footer{
+        calcite-button{
+            margin-left:5px;
+        }
+    }
 }

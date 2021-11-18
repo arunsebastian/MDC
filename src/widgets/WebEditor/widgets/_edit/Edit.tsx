@@ -1,4 +1,4 @@
-import {useEffect,useState,useLayoutEffect} from "react";
+import {useEffect,useState,useRef,useLayoutEffect} from "react";
 import {CalcitePanel,CalciteTabs,CalciteTabNav,CalciteTabTitle,
 	CalciteTab,CalciteButton
 } from "@esri/calcite-components-react/dist/components";
@@ -31,6 +31,7 @@ const captureMode="add";
 const editViewModel = new EditViewModel({});
 let featureUpdateHandle:any = null;
 const Edit = (props:EditProps) => {
+	const footerRef = useRef<HTMLCalcitePanelElement>(null);
 	const [editedFeature,setEditedFeature] = useState<__esri.Graphic|null>(null);
 	const[ attrActive,setAttrActive] = useState<boolean>(true);
 	const {view,editableFeaturesInfo,activated,
@@ -176,6 +177,15 @@ const Edit = (props:EditProps) => {
 		setEditedFeature(feature)
 	}
 
+	const attachStyleHandleToFooter = () =>{
+		if(footerRef.current){
+			let footer = ((footerRef.current) as any).shadowRoot.querySelector("footer");
+			if(footer){
+				footer.setAttribute("part","edit-footer");
+			}
+		}
+	}
+
 	useEffect(()=>{
 		if(view){
 			editViewModel.update(view);
@@ -187,6 +197,7 @@ const Edit = (props:EditProps) => {
 			setEditedFeature(editableFeaturesInfo[0].features[0]);
 			editViewModel.activateEdit(editableFeaturesInfo[0].layer,editableFeaturesInfo[0].features[0]);
 			hideEditedGraphicsInLayer();
+			attachStyleHandleToFooter();
 		}
 	},[activated,editableFeaturesInfo]);
 
@@ -212,7 +223,7 @@ const Edit = (props:EditProps) => {
 	
 	return  (
 		<CalcitePanel className="web-editor-edit">
-			<CalcitePanel style={{display:isFeaturesReadyToEdit()?"":"none"}} className="web-editor-edit-view w-100">
+			<CalcitePanel className="web-editor-edit-view w-100" style={{display:isFeaturesReadyToEdit()?"":"none"}}>
 				<CalciteTabs bordered={false} className="web-editor-view-tabs">
 					<CalciteTabNav slot="tab-nav">
 						<CalciteTabTitle  onClick={()=>setAttrActive(true)} className= "web-editor-title-l1" tab="attr">Attributes</CalciteTabTitle>
@@ -226,7 +237,7 @@ const Edit = (props:EditProps) => {
 					</CalciteTab>
 				</CalciteTabs>
 			</CalcitePanel>
-			<CalcitePanel style={{display:isFeaturesReadyToEdit()?"":"none"}} >
+			<CalcitePanel className="web-editor-edit-footer" ref={footerRef} style={{display:isFeaturesReadyToEdit()?"":"none"}} >
 				<CalciteButton width="auto" slot="footer" onClick={deleteFeature} appearance="outline">Delete</CalciteButton>
 				<CalciteButton width="auto" slot="footer" onClick={cancelEditing} appearance="outline">Cancel</CalciteButton>
 				<CalciteButton width="auto" slot="footer" onClick={saveFeature}>Save</CalciteButton>
