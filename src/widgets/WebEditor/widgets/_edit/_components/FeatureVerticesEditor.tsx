@@ -69,7 +69,7 @@ const FeatureVerticesEditor = (props:FeatureVerticesEditorProps) => {
 				}
 				
 			}else if(feature && feature.geometry.type.includes("line")){
-				vertices.splice(index,1);
+				_vertices.splice(index,1);
 				const polyline = new Polyline({
 					paths: [_vertices],
 					spatialReference: { wkid: feature.geometry.spatialReference.wkid }
