@@ -222,7 +222,7 @@ const Edit = (props:EditProps) => {
 						<FeatureAttributeEditor layer={getLayerToEdit()} feature={getFeatureToEdit()}/>
 					</CalciteTab>
 					<CalciteTab  className="web-editor-tab" tab="vertices">
-						<FeatureVerticesEditor onVertexEdited={handleVertexEdits}feature={editedFeature}/>
+						<FeatureVerticesEditor onVertexEdited={handleVertexEdits} feature={editedFeature}/>
 					</CalciteTab>
 				</CalciteTabs>
 			</CalcitePanel>

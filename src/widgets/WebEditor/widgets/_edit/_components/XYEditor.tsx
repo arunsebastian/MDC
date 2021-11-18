@@ -1,5 +1,5 @@
 import {useEffect} from "react";
-import {CalciteInput,CalciteButton} from "@esri/calcite-components-react/dist/components";
+import {CalciteInput,CalciteButton,CalciteAction, CalciteActionMenu} from "@esri/calcite-components-react/dist/components";
 
 
 
@@ -8,14 +8,14 @@ interface XYEditorProps{
 	y:number;
 	index:number;
 	deleteAllowed:boolean;
-	onRemoved:(index:number) => void;
+	onDeleteClicked:(index:number) => void;
 }
 
 const XYEditor = (props:XYEditorProps) => {
-	const {x,y,index,deleteAllowed,onRemoved} = props;
+	const {x,y,index,deleteAllowed,onDeleteClicked} = props;
 
 	const handleClick = () =>{
-		onRemoved(index);
+		onDeleteClicked(index);
 	}
 
 	useEffect(()=>{
@@ -25,9 +25,13 @@ const XYEditor = (props:XYEditorProps) => {
 	
 	return  (
 		<div className="web-editor-vertices-inputs">
-			<CalciteButton hidden={!deleteAllowed} onClick={handleClick} alignment="center" appearance="outline" color="red" icon-start="minus"></CalciteButton>
 			<CalciteInput style={{"width":'45%'}} type="number" numberButtonType="none" value={x? x.toString():""}/>
 			<CalciteInput style={{"width":'45%'}} type="number" numberButtonType="none" value={y? y.toString():""}/>
+			{/* <CalciteActionMenu label="" scale="s">
+				<CalciteAction text="Add" icon="plus"></CalciteAction>
+  				<CalciteAction text="Save" icon="save"></CalciteAction>
+			</CalciteActionMenu> */}
+			<CalciteButton scale="s" hidden={!deleteAllowed} onClick={handleClick} alignment="center" appearance="outline" color="red" icon-start="minus"></CalciteButton>
 		</div>
 	)
 }
