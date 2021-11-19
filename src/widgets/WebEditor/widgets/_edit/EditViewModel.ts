@@ -7,17 +7,20 @@ import { subclass} from "@arcgis/core/core/accessorSupport/decorators";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
 interface EditViewModelProperties{
-	view?:__esri.MapView;
+	view?:__esri.MapView
 }
 
+interface IHandle {
+	[key: string]:any
+}
 
 @subclass("EditViewModel")
 export default class EditViewModel extends EventedMixin(Accessor){
-	view:__esri.MapView=undefined;
-	sketch:__esri.SketchViewModel=undefined;
+	view:__esri.MapView|any
+	sketch:__esri.SketchViewModel|any
 	sketchLayerTitle:string="sketch";
 	layer:__esri.GraphicsLayer = new GraphicsLayer({title:this.sketchLayerTitle});
-	handles:{}={}
+	handles:IHandle ={}
     constructor(params:EditViewModelProperties) {
 		super(params);
         this.set(params);
@@ -79,9 +82,9 @@ export default class EditViewModel extends EventedMixin(Accessor){
 		}
 	}
 	_removeEventHandles = () =>{
-		for(let key in this.handles){
+		Object.keys(this.handles).forEach((key:string)=>{
 			this.handles[key].remove();
-		}
+		});
 	}
 	_getInternalEditSymbology = (feature:__esri.Graphic) =>{
 		const geometryString = feature.geometry.type;

@@ -138,7 +138,7 @@ function MapComponent() {
 		const layer =  _getZoomToLayer("polygon") || _getZoomToLayer("line") || _getZoomToLayer("point")
 		if(layer){
 			layer.when(() => {
-				return layer.queryExtent();
+				return (layer as __esri.FeatureLayer).queryExtent();
 			})
 			.then((response:any) => {
 				if(response.extent){
