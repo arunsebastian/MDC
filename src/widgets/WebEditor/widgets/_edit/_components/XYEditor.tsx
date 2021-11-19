@@ -37,8 +37,8 @@ const XYEditor = (props:XYEditorProps) => {
 	
 	return  (
 		<div className="web-editor-vertices-inputs">
-			<CalciteInput onKeyUp={handleVertexEdits} ref={xRef} required={true} style={{"width":'45%'}} type="number" numberButtonType="none" value={x? x.toString():""}/>
-			<CalciteInput onKeyUp={handleVertexEdits} ref={yRef} required={true} style={{"width":'45%'}} type="number" numberButtonType="none" value={y? y.toString():""}/>
+			<CalciteInput onBlur={handleVertexEdits} ref={xRef} style={{"width":'45%'}} type="number" numberButtonType="none" value={x? x.toString():""}/>
+			<CalciteInput onBlur={handleVertexEdits} ref={yRef} style={{"width":'45%'}} type="number" numberButtonType="none" value={y? y.toString():""}/>
 			{/* <CalciteActionMenu label="" scale="s">
 				<CalciteAction text="Add" icon="plus"></CalciteAction>
   				<CalciteAction text="Save" icon="save"></CalciteAction>

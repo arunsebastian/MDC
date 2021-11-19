@@ -83,10 +83,24 @@ export default class EditViewModel extends EventedMixin(Accessor){
 			this.handles[key].remove();
 		}
 	}
+	_getInternalEditSymbology = (feature:__esri.Graphic) =>{
+		const geometryString = feature.geometry.type;
+		let symbol = null;
+		if(geometryString){
+			if(geometryString.includes("polygon")){
+				symbol = this.sketch.get("polygonSymbol") || this.sketch.get("updatePolygonSymbol");
+			}else if(geometryString.includes("line")){
+				symbol = this.sketch.get("polylineSymbol") || this.sketch.get("updatePolylineSymbol");
+			}else if(geometryString.includes("point")){
+				symbol = this.sketch.get("pointSymbol") || this.sketch.get("updatePointSymbol");
+			}
+		}
+		return symbol;
+	}
 	activateEdit = (layer:__esri.FeatureLayer,feature:__esri.Graphic)=>{
 		this._clearLayer();
-		this.layer.graphics.add(feature);
 		const geometryString = feature.geometry.type;
+		let symbol = feature.symbol?feature.symbol:((layer.renderer) as any).symbol;
 		if(layer){
 			let key = "polygonSymbol"
 			if(geometryString.includes("line")){
@@ -94,9 +108,29 @@ export default class EditViewModel extends EventedMixin(Accessor){
 			}else if(geometryString.includes("point")){
 				key = "pointSymbol";
 			}
-			this.sketch.set(key,((layer.renderer) as any).symbol)
+			if(!symbol){
+				if(layer.typeIdField){
+					const typeValue = feature.getAttribute(layer.typeIdField);
+					const renderer = layer.renderer as any;
+					let rendererInfos = renderer.uniqueValueInfos|| renderer.classBreakInfos;
+					if(rendererInfos.length >0){
+						const rInfo = rendererInfos.find((info:any)=>{
+							return info.value == typeValue
+						});
+						symbol =  rInfo?.symbol;
+					}
+					if(!symbol){
+						symbol = this._getInternalEditSymbology(feature)
+					}
+				}else{
+					symbol = this._getInternalEditSymbology(feature)
+				}
+			}
+			feature.set("symbol",symbol);
+			this.layer.graphics.add(feature);
+			this.sketch.set(key,symbol);
+			this.sketch.update(feature);
 		}
-		this.sketch.update(feature);
 	}
 	deactivateEdit= () =>{
 		this.sketch.cancel();

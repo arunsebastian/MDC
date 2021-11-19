@@ -56,8 +56,8 @@ export const topologicalSort = (points:any,wkid?:number) => {
     }
     const _pointSort = (p1:__esri.Point, p2:__esri.Point) => {
         // Exclude the 'upper' point from the sort (which should come first).
-        if (p1 == upper) return -1;
-        if (p2 == upper) return 1;
+        if (p1 === upper) return -1;
+        if (p2 === upper) return 1;
 
         // Find the slopes of 'p1' and 'p2' when a line is 
         // drawn from those points through the 'upper' point.
