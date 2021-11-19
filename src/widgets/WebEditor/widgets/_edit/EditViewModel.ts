@@ -99,39 +99,40 @@ export default class EditViewModel extends EventedMixin(Accessor){
 	}
 	activateEdit = (layer:__esri.FeatureLayer,feature:__esri.Graphic)=>{
 		this._clearLayer();
-		const geometryString = feature.geometry.type;
 		let symbol = feature.symbol?feature.symbol:((layer.renderer) as any).symbol;
-		if(layer){
-			let key = "polygonSymbol"
-			if(geometryString.includes("line")){
-				key = "polylineSymbol";
-			}else if(geometryString.includes("point")){
-				key = "pointSymbol";
-			}
-			if(!symbol){
-				if(layer.typeIdField){
-					const typeValue = feature.getAttribute(layer.typeIdField);
-					const renderer = layer.renderer as any;
-					let rendererInfos = renderer.uniqueValueInfos|| renderer.classBreakInfos;
-					if(rendererInfos.length >0){
-						const rInfo = rendererInfos.find((info:any)=>{
-							return info.value == typeValue
-						});
-						symbol =  rInfo?.symbol;
-					}
-					if(!symbol){
-						symbol = this._getInternalEditSymbology(feature)
-					}
+		let key = "polygonSymbol"
+		const geometryString = feature.geometry.type;
+		if(geometryString.includes("line")){
+			key = "polylineSymbol";
+		}else if(geometryString.includes("point")){
+			key = "pointSymbol";
+		}
+		if(!symbol){
+			if(layer.typeIdField){
+				const typeValue = feature.getAttribute(layer.typeIdField);
+				const renderer = layer.renderer as any;
+				let rendererInfos = renderer.uniqueValueInfos|| renderer.classBreakInfos;
+				if(rendererInfos.length >0){
+					const rInfo = rendererInfos.find((info:any)=>{
+						return info.value == typeValue
+					});
+					symbol =  rInfo?.symbol;
 				}else{
 					symbol = this._getInternalEditSymbology(feature)
 				}
+			}else{
+				symbol = this._getInternalEditSymbology(feature)
 			}
-			feature.set("symbol",symbol);
-			this.layer.graphics.add(feature);
-			this.sketch.set(key,symbol);
-			this.sketch.update(feature);
+			if(!symbol){
+				symbol = this._getInternalEditSymbology(feature)
+			}
 		}
+		feature.set("symbol",symbol);
+		this.layer.graphics.add(feature);
+		this.sketch.set(key,symbol);
+		this.sketch.update(feature);
 	}
+
 	deactivateEdit= () =>{
 		this.sketch.cancel();
 		this._clearLayer();
