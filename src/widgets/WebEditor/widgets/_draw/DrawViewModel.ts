@@ -76,20 +76,54 @@ export default class DrawViewModel extends EventedMixin(Accessor){
 			this.handles[key].remove();
 		}
 	}
-	activateDraw = (layer:__esri.FeatureLayer,geometryString:any)=>{
-		this._clearLayer();
-		let drawingTool = geometryString;
-		if(layer){
-			let key = "polygonSymbol"
-			if(geometryString.includes("line")){
-				key = "polylineSymbol";
-				drawingTool ="polyline";
+	_getInternalDrawSymbology =(layer:__esri.FeatureLayer) =>{
+		const geometryString = layer.geometryType;
+		let symbol = null;
+		if(geometryString){
+			if(geometryString.includes("polygon")){
+				symbol = this.sketch.get("polygonSymbol") || this.sketch.get("updatePolygonSymbol");
+			}else if(geometryString.includes("line")){
+				symbol = this.sketch.get("polylineSymbol") || this.sketch.get("updatePolylineSymbol");
 			}else if(geometryString.includes("point")){
-				key = "pointSymbol";
+				symbol = this.sketch.get("pointSymbol") || this.sketch.get("updatePointSymbol");
 			}
-			this.sketch.set(key,((layer.renderer) as any).symbol)
 		}
-		this.sketch.create(drawingTool);
+		return symbol;
+	}
+
+	activateDraw = (templateItem:__esri.TemplateItem)=>{
+		this._clearLayer();
+		const templateLayer = templateItem.layer;
+		let symbol = ((templateLayer.renderer) as any).symbol;
+		let key = "polygonSymbol"
+		const geometryString = templateLayer.geometryType as any;
+		if(geometryString.includes("line")){
+			key = "polylineSymbol";
+		}else if(geometryString.includes("point")){
+			key = "pointSymbol";
+		}
+		if(!symbol){
+			if(templateLayer.typeIdField){
+				const typeValue = templateItem.template.prototype.attributes[templateLayer.typeIdField];
+				const renderer = templateLayer.renderer as any;
+				let rendererInfos = renderer.uniqueValueInfos|| renderer.classBreakInfos;
+				if(rendererInfos.length >0){
+					const rInfo = rendererInfos.find((info:any)=>{
+						return info.value == typeValue
+					});
+					symbol =  rInfo?.symbol;
+				}else{
+					symbol = this._getInternalDrawSymbology(templateLayer)
+				}
+			}else{
+				symbol = this._getInternalDrawSymbology(templateLayer)
+			}
+			if(!symbol){
+				symbol = this._getInternalDrawSymbology(templateLayer)
+			}
+		}
+		this.sketch.set(key,symbol);
+		this.sketch.create(geometryString);
 	}
 	deactivateDraw = () =>{
 		this.sketch.cancel();

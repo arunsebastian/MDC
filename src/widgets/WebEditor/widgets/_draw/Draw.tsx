@@ -73,13 +73,14 @@ const Draw = (props:DrawProps) => {
 					onSketchTemplateSelected(null)
 				}else{
 					if(!selectedTemplateItem || !selectedTemplateItem.get("selected") ||
-						clickedItem.layer.uid !== (selectedTemplateItem.layer as any).uid
+						clickedItem.layer.uid !== (selectedTemplateItem.layer as any).uid ||
+						clickedItem.label !== selectedTemplateItem.label
 					){
 						selectedTemplateItem = clickedItem;
 						selectedTemplateItem.set("selected",true);
 						if(templateInfo?.template?.drawingTool && drawViewModel){
 							styleSelectedTemplate();
-							drawViewModel.activateDraw(selectedTemplateItem.layer,templateInfo.template.drawingTool);
+							drawViewModel.activateDraw(selectedTemplateItem);
 							onSketchTemplateSelected(selectedTemplateItem)
 						}
 					}else{
