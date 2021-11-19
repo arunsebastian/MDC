@@ -141,7 +141,9 @@ function MapComponent() {
 				return layer.queryExtent();
 			})
 			.then((response:any) => {
-				view.goTo(response.extent);
+				if(response.extent){
+					view.goTo(response.extent);
+				}
 			});
 		}
 	}

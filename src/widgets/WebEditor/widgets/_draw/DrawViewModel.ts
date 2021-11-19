@@ -109,7 +109,7 @@ export default class DrawViewModel extends EventedMixin(Accessor){
 				let rendererInfos = renderer.uniqueValueInfos|| renderer.classBreakInfos;
 				if(rendererInfos.length >0){
 					const rInfo = rendererInfos.find((info:any)=>{
-						return info.value == typeValue
+						return info.value == typeValue;
 					});
 					symbol =  rInfo?.symbol;
 				}else{
