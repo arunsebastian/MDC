@@ -4,6 +4,7 @@ import FeatureTemplates from "@arcgis/core/widgets/FeatureTemplates";
 import FeatureTemplatesViewModel from "@arcgis/core/widgets/FeatureTemplates/FeatureTemplatesViewModel";
 import DrawViewModel from "./DrawViewModel";
 import Graphic from "@arcgis/core/Graphic";
+import { useAppContext } from "../../../../contexts/AppContextProvider";
 import "./Draw.scss";
 
 
@@ -38,6 +39,7 @@ let selectedTemplateItem:__esri.TemplateItem | null= null;
 const Draw = (props:DrawProps) => {
 		const drawRef = useRef<HTMLCalciteBlockElement>();
 		const {view,layers,activated,templateFromHistory,onFeatureSketched,onSketchTemplateSelected} = props;
+		const { loading, setLoading } = useAppContext();
 		const clearSelectedTemplate = (keepHistory?:boolean) =>{
 			const selectedNode = drawRef.current.querySelector("li.esri-item-list__list-item--selected");
 			if(selectedNode){
@@ -148,6 +150,7 @@ const Draw = (props:DrawProps) => {
 					view.popup.autoOpenEnabled = false;
 				}
 				clickHandle=view.on("click",(event:any)=>{
+					setLoading(true);
 					view.hitTest(event).then((response:any) =>{
 						let results = response.results;
 						if (results.length > 0) {
@@ -158,7 +161,8 @@ const Draw = (props:DrawProps) => {
 									attributes:results[0].graphic.attributes,
 									geometry:results[0].graphic.geometry.clone(),
 									symbol:((layer.renderer) as any).symbol
-								})
+								});
+								setLoading(false);
 								onFeatureSketched({features:[editGraphic],layer:layer,mode:"edit"});
 							}
 						}

@@ -11,6 +11,7 @@ import esriConfig from "@arcgis/core/config";
 import appConfig from "../../../config/config-interface";
 import {whenTrueOnce} from "@arcgis/core/core/watchUtils";
 import { waitForFeatureLayersLoad } from "../../../utils/MapUtils";
+import {AppContextProvider} from "../../../contexts/AppContextProvider"
 import "./MapComponent.scss";
 
 const arcgisOnline:string = "https://www.arcgis.com";
@@ -68,7 +69,9 @@ function MapComponent() {
 			const node = document.createElement("div");
 			node.setAttribute("class","esri-widget");
 			view.ui.add(node,"top-right");
-			ReactDOM.render(<WebEditor view={view}/>,node)
+			ReactDOM.render(<AppContextProvider>
+				<WebEditor view={view}/>
+			</AppContextProvider>,node)
 		}
 	},[view]);
 

@@ -2,12 +2,14 @@ import {useEffect,useState, useLayoutEffect } from "react";
 import { 
 	CalciteBlock,
 	CalciteTabs, CalciteTab, 
-	CalciteTabNav, CalciteTabTitle,
+	CalciteTabNav, CalciteTabTitle
 } from "@esri/calcite-components-react/dist/components";
 import {whenTrueOnce} from "@arcgis/core/core/watchUtils";
 import Draw ,{AddFeatureInfo} from "./widgets/_draw/Draw";
 import Edit,{EditFeatureInfo} from "./widgets/_edit/Edit";
 import { waitForFeatureLayersLoad } from "../../utils/MapUtils";
+import { useAppContext } from "../../contexts/AppContextProvider";
+import MaskedLoader from  "../MaskedLoader/MaskedLoader";
 
 import "./Editor.scss";
 
@@ -21,7 +23,8 @@ const Editor = (props:EditorProps) => {
 		const [editableFeaturesInfo,setEditableFeaturesInfo]=useState<EditFeatureInfo[]>([]);
 		const [drawActive,setDrawActive] = useState<boolean>(true);
 		const [templateFromHistory,setTemplateFromHistory]= useState<boolean>(false);
-
+		const {loading, setLoading} = useAppContext();
+	
 		const activateDrawView = () =>{
 			const drawTab = document.querySelector("calcite-tab-title[tab^='draw']");
 			if(drawTab){
@@ -86,6 +89,7 @@ const Editor = (props:EditorProps) => {
 
 		return  (
 			<CalciteBlock open={true} className="web-editor" collapsible={true} heading="Editor">
+				<MaskedLoader active={loading}/>
 				<CalciteTabs bordered={false}>
 					<CalciteTabNav slot="tab-nav">
 						<CalciteTabTitle onClick={()=>setDrawActive(true)} className= "web-editor-title-l1" tab="draw"> Draw Feature</CalciteTabTitle>
@@ -99,7 +103,6 @@ const Editor = (props:EditorProps) => {
 					</CalciteTab>
 				</CalciteTabs>
 			</CalciteBlock>
-			
   		)
 }
 Editor.defaultProps ={

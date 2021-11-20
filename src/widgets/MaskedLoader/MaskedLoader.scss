@@ -1,0 +1,11 @@
+.masked-loader{
+    position: absolute;
+    background-color: transparent;
+    --calcite-ui-background:transparent;
+    z-index: 9999;
+    width:100%;
+    height:100%;
+    .calci-loader{
+        margin-top: calc(50% - 8rem);
+    }
+}

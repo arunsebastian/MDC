@@ -7,6 +7,14 @@
             overflow: hidden !important;
         }
     }
+    .web-editor-inactive{
+        align-items: stretch;
+        display: flex;
+        flex: 1 1 auto;
+        overflow: auto;
+        flex-flow: column nowrap;
+        padding: 10px;
+    }
     .web-editor-edit-footer::part(edit-footer){
         justify-content: flex-end;
         padding-right:0px;

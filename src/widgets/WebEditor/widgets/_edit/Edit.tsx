@@ -7,7 +7,9 @@ import FeatureAttributeEditor from "./_components/FeatureAttributeEditor";
 import FeatureVerticesEditor from "./_components/FeatureVerticesEditor";
 import { whenTrueOnce } from "@arcgis/core/core/watchUtils";
 import Graphic from "@arcgis/core/Graphic";
+import { useAppContext } from "../../../../contexts/AppContextProvider";
 import "./Edit.scss";
+
 
 
 export interface EditFeatureInfo{
@@ -35,6 +37,7 @@ const Edit = (props:EditProps) => {
 	const footerRef = useRef<HTMLCalcitePanelElement>(null);
 	const [editedFeature,setEditedFeature] = useState<__esri.Graphic|null>(null);
 	const[ attrActive,setAttrActive] = useState<boolean>(true);
+	const { loading, setLoading } = useAppContext();
 	const {view,editableFeaturesInfo,activated,
 		onCancelEditing,
 		onFeatureCreated,
@@ -112,6 +115,7 @@ const Edit = (props:EditProps) => {
 	const saveFeature=() =>{
 		const mode = editableFeaturesInfo[0].mode;
 		const layer =  editableFeaturesInfo[0].layer;
+		setLoading(true);
 		if(mode === captureMode){
 			layer.applyEdits({
 				addFeatures :editableFeaturesInfo[0].features
@@ -126,15 +130,16 @@ const Edit = (props:EditProps) => {
 						returnGeometry: true
 					}).then((results:any) => {
 							if (results.features.length > 0) {
-							const editFeature = results.features[0];
-							const graphic = new Graphic({
-								attributes:editFeature.attributes,
-								geometry:editFeature.geometry.clone(),
-								symbol:editableFeaturesInfo[0].features[0].symbol
-							});
-							editViewModel.deactivateEdit();
-							onFeatureCreated({layer:layer,features:[graphic],mode:"edit"});
-						}
+								const editFeature = results.features[0];
+								const graphic = new Graphic({
+									attributes:editFeature.attributes,
+									geometry:editFeature.geometry.clone(),
+									symbol:editableFeaturesInfo[0].features[0].symbol
+								});
+								editViewModel.deactivateEdit();
+								setLoading(false);
+								onFeatureCreated({layer:layer,features:[graphic],mode:"edit"});
+							}
 					});
 				}
 			});
@@ -147,6 +152,7 @@ const Edit = (props:EditProps) => {
 					editViewModel.deactivateEdit();
 					showEditedFeaturesInLayer();
 					activateAttributeEditingView();
+					setLoading(false);
 					if(onFeatureUpdated){
 						onFeatureUpdated(editableFeaturesInfo[0]);
 					}
@@ -181,12 +187,15 @@ const Edit = (props:EditProps) => {
 		const mode = editableFeaturesInfo[0].mode;
 		const layer =  editableFeaturesInfo[0].layer;
 		editViewModel.deactivateEdit();
+		setLoading(true);
 		if(mode === captureMode){
 			cancelEditing();
+			setLoading(false);
 		}else if(mode === editMode){
 			layer.applyEdits({
 				deleteFeatures :editableFeaturesInfo[0].features
 			}).then((result:any) => {
+				setLoading(false)
 				cancelEditing();
 			});
 		}
@@ -266,9 +275,9 @@ const Edit = (props:EditProps) => {
 				<CalciteButton width="auto" slot="footer" onClick={cancelEditing} appearance="outline">Cancel</CalciteButton>
 				<CalciteButton width="auto" slot="footer" onClick={saveFeature}>Save</CalciteButton>
 			</CalcitePanel>
-			<CalcitePanel style={{display:isFeaturesReadyToEdit()?"none":""}} className="web-editor-inactive w-100">
+			<div style={{display:isFeaturesReadyToEdit()?"none":""}} className="web-editor-inactive w-100">
 					Click on a feature in map to edit.
-			</CalcitePanel>
+			</div>
 			<CalciteModal ref={deleteFeatureRef} scale="s" width="s">
 				<div slot="header" >Confirm</div>
 				<div slot="content">
