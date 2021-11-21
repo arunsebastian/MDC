@@ -24,17 +24,11 @@ function MapComponent() {
 	
 	const isWebmapConfigured = () => {
 		//check if webmap
-		return (appConfig["webmapConfig"]?.webmapId || "").length > 0
-	}
-
-	const isNormalMapConfigured = () => {
-		//check if basemaps
-		return  appConfig["mapConfig"]?.basemaps instanceof Array && 
-				appConfig["mapConfig"]?.basemaps.length > 0
+		return (appConfig?.webmapId || "").length > 0
 	}
 
 	const getConfiguredPortal = useCallback(() => {
-		return appConfig["webmapConfig"]?.portal || arcgisOnline;
+		return appConfig?.portal || arcgisOnline;
 	},[]);
 
 	const setEsriConfig = useCallback(() =>{
@@ -76,26 +70,36 @@ function MapComponent() {
 	},[view]);
 
 	const getWebMapIdFromModule = () =>{
-		let id = appConfig.webmapConfig.webmapId;
-		if(appConfig.webmapConfig.urlModuleNameKey && searchString){
+		let id = appConfig.webmapId;
+		if(appConfig.urlModuleNameKey && searchString){
 			const urlParams = new URLSearchParams(searchString);
-			const moduleName = urlParams.get(appConfig.webmapConfig.urlModuleNameKey);
-			if(moduleName && appConfig.webmapConfig[moduleName]){
-				id = appConfig.webmapConfig[moduleName].webmapId;
+			const moduleName = urlParams.get(appConfig.urlModuleNameKey);
+			if(moduleName){
+				// I AM HERE:: SEARCH WITH TAG
+				//id = appConfig[moduleName].webmapId;
+				let module = appConfig.modules.find((module:any)=>{
+					return module.name === moduleName;
+				});
+				if(module){
+					id =  module.webmapId;
+				}
 			}
 		}
 		return id;
 	}
 
 	const applyDefinitionQueries = () =>{
-		if(appConfig.webmapConfig.urlModuleNameKey && searchString){
+		if(appConfig.urlModuleNameKey && searchString){
 			const urlParams = new URLSearchParams(searchString);
-			const moduleName = urlParams.get(appConfig.webmapConfig.urlModuleNameKey);
-			if(moduleName && appConfig.webmapConfig[moduleName]){
-				const urlQueryParamKey = appConfig.webmapConfig.urlQueryParamKey;
-				const queryField = appConfig.webmapConfig.queryField;
+			const moduleName = urlParams.get(appConfig.urlModuleNameKey);
+			if(moduleName){
+				const urlQueryParamKey = appConfig.urlQueryParamKey;
+				const queryField = appConfig.queryField;
 				const queryValue = urlParams.get(urlQueryParamKey);
-				if(queryValue){
+				let module = appConfig.modules.find((module:any)=>{
+					return module.name === moduleName;
+				});
+				if(module && queryValue){
 					let featureLayers =view.map.allLayers.filter((layer:__esri.Layer) => {
 						return layer.type === 'feature'; 
 					}).toArray()  as __esri.FeatureLayer[];
@@ -123,15 +127,20 @@ function MapComponent() {
 
 	const _getZoomToLayer = (type:string) =>{
 		let zoomToLayer= null;
-		if(appConfig.webmapConfig.urlModuleNameKey && searchString){
+		if(appConfig.urlModuleNameKey && searchString){
 			const urlParams = new URLSearchParams(searchString);
-			const moduleName = urlParams.get(appConfig.webmapConfig.urlModuleNameKey);
-			if(moduleName && appConfig.webmapConfig[moduleName].zoomToLayer){
-				zoomToLayer = view.map.allLayers.find((layer:__esri.Layer)=> {
-					return layer.type === 'feature' 
-						  && layer.title.includes(appConfig.webmapConfig[moduleName].zoomToLayer)
-						  && (layer as any).geometryType.includes(type)
+			const moduleName = urlParams.get(appConfig.urlModuleNameKey);
+			if(moduleName){
+				let module = appConfig.modules.find((module:any)=>{
+					return module.name === moduleName;
 				});
+				if(module?.zoomToLayer){
+					zoomToLayer = view.map.allLayers.find((layer:__esri.Layer)=> {
+						return layer.type === 'feature' 
+							  && layer.title.includes(module.zoomToLayer)
+							  && (layer as any).geometryType.includes(type)
+					});
+				}
 			}
 		}
 		return zoomToLayer;
